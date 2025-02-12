@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/cacb577c-e13e-46ba-8707-ff3a56ed26c4)
+![image](https://github.com/user-attachments/assets/e1b1b52f-de9a-4232-ace4-62889211479a)
 
 # 📚 **Estructuras de Datos I - (UIP)** 🧠
 

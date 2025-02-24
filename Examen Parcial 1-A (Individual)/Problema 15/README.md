@@ -14,12 +14,12 @@ Requisitos:
 - Implementar funciones para agregar un pedido, asignar un pedido a un repartidor y mostrar los pedidos pendientes.
 - El sistema debe permitir múltiples repartidores.
 
-## **❓Para resolverlo, deberá responder las siguientes preguntas**
+## **❓ Para resolverlo, deberá responder las siguientes preguntas**
 
 ### **1. ¿Qué estructura de datos permite manejar prioridades?**
 - **Respuesta**:  
   Una **cola de prioridad** (implementada con un **heap**) es ideal para manejar elementos con diferentes niveles de prioridad. En Python, se puede utilizar el módulo `heapq` para implementar un heap, donde los elementos con menor valor tienen mayor prioridad.  
-  - **Razón**: Los heaps permiten insertar y extraer elementos en tiempo logarítmico ($ O(\log N) $), lo que es eficiente para manejar prioridades.
+  - **Razón**: Los heaps permiten insertar y extraer elementos en tiempo logarítmico (O(log N)), lo que es eficiente para manejar prioridades.
 
 ### **2. ¿Cómo se podría organizar la cola para que los pedidos urgentes sean atendidos primero?**
 - **Respuesta**:  
@@ -60,20 +60,20 @@ Requisitos:
   - Agrega un pedido al heap con su prioridad correspondiente:
     - Prioridad `1` para pedidos urgentes.
     - Prioridad `2` para pedidos normales.
-  - Complejidad: $ O(\log N) $, donde $ N $ es el número de pedidos en el heap.
+  - Complejidad: O(log N), donde N es el número de pedidos en el heap.
 
 - **Método `agregar_repartidor(nombre)`**:
   - Agrega un repartidor a la cola de repartidores disponibles.
-  - Complejidad: $ O(1) $, ya que `append` es eficiente en `deque`.
+  - Complejidad: O(1), ya que `append` es eficiente en `deque`.
 
 - **Método `asignar_pedido()`**:
   - Asigna el próximo pedido disponible (según la prioridad) al primer repartidor disponible.
   - Si no hay pedidos o repartidores disponibles, imprime un mensaje.
-  - Complejidad: $ O(\log N) $ para extraer el pedido del heap y $ O(1) $ para asignar un repartidor.
+  - Complejidad: O(log N) para extraer el pedido del heap y O(1) para asignar un repartidor.
 
 - **Método `mostrar_pedidos_pendientes()`**:
   - Muestra los pedidos pendientes en orden de prioridad.
-  - Complejidad: $ O(N \log N) $, donde $ N $ es el número de pedidos, debido a la ordenación.
+  - Complejidad: O(N log N), donde N es el número de pedidos, debido a la ordenación.
 
 ### **📋 Tabla de Ejecución Paso a Paso**
 
@@ -110,18 +110,16 @@ Requisitos:
 
 ### **⏱️ Complejidad Temporal**
 1. **Agregar Pedido**:
-   - Complejidad: $ O(\log N) $, donde $ N $ es el número de pedidos en el heap.
+   - Complejidad: O(log N), donde N es el número de pedidos en el heap.
 
 2. **Agregar Repartidor**:
-   - Complejidad: $ O(1) $, ya que `append` es eficiente en `deque`.
+   - Complejidad: O(1), ya que `append` es eficiente en `deque`.
 
 3. **Asignar Pedido**:
-   - Complejidad: $ O(\log N) $ para extraer el pedido del heap y $ O(1) $ para asignar un repartidor.
+   - Complejidad: O(log N) para extraer el pedido del heap y O(1) para asignar un repartidor.
 
 4. **Mostrar Pedidos Pendientes**:
-   - Complejidad: $ O(N \log N) $, donde $ N $ es el número de pedidos, debido a la ordenación.
-
----
+   - Complejidad: O(N log N), donde N es el número de pedidos, debido a la ordenación.
 
 ### **✅ Cumplimiento de los Requisitos**
 1. **Estructura de Datos Utilizada**:
@@ -133,8 +131,8 @@ Requisitos:
    - La cola permite asignar repartidores en el orden en que están disponibles.
 
 3. **Eficiencia**:
-   - Complejidad temporal: $ O(\log N) $ para agregar y asignar pedidos; $ O(N \log N) $ para mostrar pedidos pendientes.
-   - Complejidad espacial: $ O(N + M) $, donde $ N $ es el número de pedidos y $ M $ es el número de repartidores.
+   - Complejidad temporal: O(log N) para agregar y asignar pedidos; O(N log N) para mostrar pedidos pendientes.
+   - Complejidad espacial: O(N + M), donde N es el número de pedidos y M es el número de repartidores.
 
 ### **📢 Salida del Código**
 Observa la salida en la consola:

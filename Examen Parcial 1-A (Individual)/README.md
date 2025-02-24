@@ -19,6 +19,16 @@ Resuelva los siguientes problemas utilizando alguna de las **estructuras de dato
 
 ---
 
+### **🌐 Página Web Interactiva**
+
+Se ha creado una página web interactiva donde se compilan todos los problemas resueltos y se muestran sus resultados en tiempo real. Puedes acceder a ella desde el siguiente enlace:
+
+🔗 **[Ver Página Web](https://un2versidad.github.io/Estructuras-de-Datos-I/Examen%20Parcial%201-A%20(Individual)/Website/index.html)**
+
+En esta página podrás explorar cada problema, compilar los codigo de los problemas y visualizar la salida de cada problema.
+
+---
+
 ### ❓ Problema 1 (5 puntos): ➕ Subarreglo de Suma Máxima ➕
 
 Dado un arreglo de enteros de tamaño *NNN*, escribe una función que encuentre el **subarreglo con la suma más grande** y devuelva dicha suma.

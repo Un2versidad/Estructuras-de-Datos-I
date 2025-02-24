@@ -123,7 +123,7 @@ Simula un **sistema de atención en una tienda** donde los clientes son atendido
 
 ---
 
-### ❓ Problema 13 (5 puntos): ⏫⏫ Cola con Dos Pilas 🤯
+### ❓ Problema 13 (5 puntos): ⏫⏫ Cola con Dos Pilas 
 
 Implementa una **cola con dos pilas**. Es decir, simula el comportamiento de una cola utilizando únicamente **dos pilas**.
 

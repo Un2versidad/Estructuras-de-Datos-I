@@ -1,3 +1,5 @@
+![image](https://github.com/user-attachments/assets/e1b1b52f-de9a-4232-ace4-62889211479a)
+
 # 🇵🇦 UNIVERSIDAD INTERAMERICANA DE PANAMÁ 🇵🇦
 ## 🏛️ REPÚBLICA DE PANAMÁ 🏛️
 ### ⚙️ FACULTAD DE INGENIERÍA, ARQUITECTURA Y DISEÑO ⚙️

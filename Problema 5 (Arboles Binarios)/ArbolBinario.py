@@ -51,21 +51,19 @@ class ArbolBinario:
       print(nodo.valor, end=" ")
 
 arbol = ArbolBinario()
-arbol.insertar(5)
-arbol.insertar(3)
-arbol.insertar(7)
-arbol.insertar(2)
-arbol.insertar(4)
-arbol.insertar(6)
-arbol.insertar(8)
+valores = [5, 3, 7, 2, 4, 6, 8]
 
-print("\nRecorrido Inorden:")
+for valor in valores:
+  arbol.insertar(valor)
+
+print("\nInorden:")
 arbol.inorden(arbol.raiz)
+print()
 
-print("\nRecorrido Preorden:")
+print("\nPreorden:")
 arbol.preorden(arbol.raiz)
+print()
 
-print("\nRecorrido Postorden:")
+print("\nPostorden:")
 arbol.postorden(arbol.raiz)
-
 print()

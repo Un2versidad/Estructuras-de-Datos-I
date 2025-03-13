@@ -19,6 +19,12 @@ El script incluye almacenamiento en caché para mejorar el rendimiento, manejo d
 
 ---
 
+# 📸 Screenshot
+
+![image](https://github.com/user-attachments/assets/c3174282-accf-4172-92fa-cb947d138da1)
+
+---
+
 ## 🛠️ Requisitos
 
 Antes de empezar, asegúrate de tener instalado lo siguiente:

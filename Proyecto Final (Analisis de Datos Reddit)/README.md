@@ -35,6 +35,7 @@ Antes de empezar, asegúrate de tener instalado lo siguiente:
 
 ```bash
 pip install asyncpraw jinja2 python-dotenv
+
 📂 Estructura del Proyecto
 reddit-analytics/
 │

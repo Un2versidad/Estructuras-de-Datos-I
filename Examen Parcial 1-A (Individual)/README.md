@@ -27,6 +27,8 @@ Se ha creado una página web interactiva donde se compilan todos los problemas r
 
 En esta página podrás explorar cada problema, compilar los codigo de los problemas y visualizar la salida de cada problema.
 
+![image](https://github.com/user-attachments/assets/1a8c4e70-9c0f-48e5-a67b-4782a9cdd9d8)
+
 ---
 
 ### ❓ Problema 1 (5 puntos): ➕ Subarreglo de Suma Máxima ➕

@@ -19,9 +19,15 @@ El script incluye almacenamiento en caché para mejorar el rendimiento, manejo d
 
 ---
 
-## 📸 Screenshot
+## 📸 Screenshot (Ejemplo de Resultados)
 
 ![image](https://github.com/user-attachments/assets/c3174282-accf-4172-92fa-cb947d138da1)
+
+---
+
+## 🎞️ Video (Ejemplo de Funcionamiento)
+
+https://github.com/user-attachments/assets/55187dee-e544-4934-ac23-a15b1a1cee52
 
 ---
 

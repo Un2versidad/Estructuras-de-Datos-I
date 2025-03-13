@@ -1,0 +1,2026 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 {{ data.tag if data.tag else 'Reddit Analytics' }} - Análisis de Reddit</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M19 11H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2Z'></path><path d='M7 7V5c0-1.1.9-2 2-2h6a2 2 0 0 1 2 2v2'></path><circle cx='12' cy='16' r='1'></circle></svg>"
+    type="image/svg+xml">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Tema oscuro (default) */
+            --bg-dark: #1A1A1B;
+            --bg-card: #272729;
+            --bg-card-hover: #2D2D30;
+            --bg-highlight: #343536;
+            --text-primary: #E5E5E5;
+            --text-secondary: #9CA3AF;
+            --accent: #FF4500;
+            --accent-hover: #FF5722;
+            --accent-light: rgba(255, 69, 0, 0.1);
+            --accent-medium: rgba(255, 69, 0, 0.3);
+            --border-color: #343536;
+            --success: #46BD62;
+            --warning: #FFC857;
+            --error: #FF4D6A;
+            --upvote: #FF4500;
+            --downvote: #7193FF;
+            --karma: #FFB000;
+            
+            /* Sombras y efectos */
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            --card-hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            --transition-fast: 0.2s ease;
+            --transition-medium: 0.3s ease;
+            
+            /* Bordes */
+            --radius-sm: 0.5rem;
+            --radius-md: 0.75rem;
+            --radius-lg: 1rem;
+            --radius-xl: 1.5rem;
+        }
+
+        /* Tema claro */
+        body.light-theme {
+            --bg-dark: #F5F5F5;
+            --bg-card: #FFFFFF;
+            --bg-card-hover: #F9F9F9;
+            --bg-highlight: #EFEFEF;
+            --text-primary: #1A1A1B;
+            --text-secondary: #4A4A4B;
+            --border-color: #E0E0E0;
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            --card-hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Estilos para el botón de tema */
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--bg-highlight);
+            color: var(--text-primary);
+        }
+
+        .theme-toggle .sun-icon,
+        .theme-toggle .moon-icon {
+            position: absolute;
+            transition: transform 0.5s ease, opacity 0.3s ease;
+        }
+
+        body:not(.light-theme) .sun-icon {
+            opacity: 1;
+            transform: rotate(0);
+        }
+
+        body:not(.light-theme) .moon-icon {
+            opacity: 0;
+            transform: rotate(90deg);
+        }
+
+        body.light-theme .sun-icon {
+            opacity: 0;
+            transform: rotate(-90deg);
+        }
+
+        body.light-theme .moon-icon {
+            opacity: 1;
+            transform: rotate(0);
+        }
+
+        /* Ajuste para el patrón de fondo en tema claro */
+        body.light-theme::before {
+            opacity: 0.2;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23FF4500' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.5;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        /* Header y navegación */
+        .header {
+            position: sticky;
+            top: 0;
+            background-color: rgba(26, 26, 27, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 100;
+            padding: 0.75rem 0;
+            transition: background-color var(--transition-medium);
+        }
+
+        body.light-theme .header {
+            background-color: rgba(245, 245, 245, 0.95);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 1.25rem;
+            text-decoration: none;
+            transition: transform var(--transition-fast);
+            position: relative;
+        }
+
+        .logo:hover {
+            transform: translateY(-1px);
+        }
+
+        .logo-icon {
+            transition: transform var(--transition-medium);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--accent);
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+
+        .logo:hover .logo-icon {
+            transform: rotate(20deg);
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo-subtitle {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        /* Tarjetas y contenedores */
+        .card {
+            background-color: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border-color);
+            transition: all var(--transition-medium);
+            box-shadow: var(--card-shadow);
+            opacity: 0;
+            transform: translateY(20px);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--card-hover-shadow);
+            border-color: var(--accent);
+            background-color: var(--bg-card-hover);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, var(--accent), transparent);
+            opacity: 0;
+            transition: opacity var(--transition-medium);
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        /* Decoración de fondo */
+        .decoration {
+            position: absolute;
+            opacity: 0.05;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .decoration-1 {
+            top: 20%;
+            left: 5%;
+            width: 300px;
+            height: 300px;
+            background-color: var(--accent);
+            border-radius: 50%;
+            filter: blur(100px);
+        }
+
+        .decoration-2 {
+            bottom: 10%;
+            right: 5%;
+            width: 250px;
+            height: 250px;
+            background-color: var(--karma);
+            border-radius: 50%;
+            filter: blur(80px);
+        }
+
+        /* Títulos de sección */
+        .section-title {
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            position: relative;
+            padding-bottom: 0.75rem;
+        }
+
+        .section-title-icon {
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--accent-light);
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            transition: all var(--transition-medium);
+        }
+
+        .card:hover .section-title-icon {
+            background-color: var(--accent);
+            color: white;
+            transform: rotate(5deg);
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to right, var(--accent), transparent);
+        }
+
+        /* Post principal */
+        .post-container {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .vote-buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: var(--radius-md);
+            transition: all var(--transition-medium);
+        }
+
+        .card:hover .vote-buttons {
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+
+        .vote-button {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            padding: 0.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .vote-button.upvote:hover {
+            color: var(--upvote);
+            background-color: var(--accent-light);
+            transform: translateY(-2px);
+        }
+
+        .vote-button.downvote:hover {
+            color: var(--downvote);
+            background-color: rgba(113, 147, 255, 0.1);
+            transform: translateY(2px);
+        }
+
+        .vote-count {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin: 0.5rem 0;
+            transition: all var(--transition-fast);
+        }
+
+        .vote-button.upvote:hover + .vote-count {
+            color: var(--upvote);
+        }
+
+        .post-content {
+            flex: 1;
+        }
+
+        .post-header {
+            margin-bottom: 1rem;
+        }
+
+        .post-meta {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 0.75rem;
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            transition: all var(--transition-fast);
+        }
+
+        .post-meta:hover {
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            transition: color var(--transition-fast);
+            position: relative;
+        }
+
+        .meta-item:hover {
+            color: var(--accent);
+        }
+
+        .meta-separator {
+            color: var(--text-secondary);
+            opacity: 0.5;
+        }
+
+        .post-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            line-height: 1.3;
+            transition: all var(--transition-fast);
+        }
+
+        .card:hover .post-title {
+            color: var(--accent);
+        }
+
+        .post-body {
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+            font-size: 1.05rem;
+        }
+
+        /* Media (imágenes y videos) */
+        .media-container {
+            position: relative;
+            width: 100%;
+            margin: 1.5rem 0;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            aspect-ratio: 16 / 9;
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+
+        .media-slide {
+            display: none;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: var(--radius-md);
+            transition: opacity var(--transition-medium);
+        }
+
+        .media-slide.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .slide-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            width: 2.5rem;
+            height: 2.5rem;
+            cursor: pointer;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+            border: none;
+            z-index: 10;
+        }
+
+        .slide-nav:hover {
+            background: var(--accent);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .prev { left: 1rem; }
+        .next { right: 1rem; }
+
+        .slide-indicator {
+            position: absolute;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 0.5rem;
+            z-index: 10;
+        }
+
+        .slide-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.5);
+            transition: all var(--transition-fast);
+        }
+
+        .slide-dot.active {
+            background-color: var(--accent);
+            transform: scale(1.2);
+        }
+
+        /* Acciones del post */
+        .post-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+            flex-wrap: wrap;
+        }
+
+        .action-button {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .action-button:hover {
+            color: var(--text-primary);
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .action-button svg {
+            transition: transform var(--transition-fast);
+        }
+
+        .action-button:hover svg {
+            transform: scale(1.1);
+        }
+
+        /* Estadísticas */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+            padding: 1.25rem;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all var(--transition-medium);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 30%;
+            height: 100%;
+            background: linear-gradient(to left, rgba(255, 69, 0, 0.05), transparent);
+            opacity: 0;
+            transition: opacity var(--transition-medium);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            background: linear-gradient(145deg, rgba(255, 69, 0, 0.1), rgba(255, 69, 0, 0.05));
+            border-color: var(--accent);
+        }
+
+        .stat-card:hover::after {
+            opacity: 1;
+        }
+
+        .stat-icon {
+            background-color: rgba(255, 69, 0, 0.1);
+            padding: 0.75rem;
+            border-radius: var(--radius-sm);
+            color: var(--accent);
+            transition: all var(--transition-medium);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-card:hover .stat-icon {
+            transform: scale(1.1) rotate(5deg);
+            background-color: var(--accent);
+            color: white;
+        }
+
+        .stat-info {
+            flex: 1;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            transition: all var(--transition-fast);
+        }
+
+        .stat-card:hover .stat-value {
+            color: var(--accent);
+        }
+
+        /* Comentarios */
+        .comments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .comment {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+            padding: 1.25rem;
+            border-radius: var(--radius-md);
+            transition: all var(--transition-fast);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .comment::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--accent);
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+        }
+
+        .comment:hover {
+            transform: translateX(4px);
+            background: linear-gradient(145deg, rgba(255, 69, 0, 0.1), rgba(255, 69, 0, 0.05));
+            border-color: var(--accent);
+        }
+
+        .comment:hover::before {
+            opacity: 1;
+        }
+
+        .comment-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .user-avatar {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            background-color: var(--accent-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all var(--transition-medium);
+            border: 2px solid transparent;
+        }
+
+        .comment:hover .user-avatar {
+            background-color: var(--accent);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .comment-user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .comment-username {
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .user-karma {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.75rem;
+            color: var(--karma);
+            background-color: rgba(255, 176, 0, 0.1);
+            padding: 0.2rem 0.4rem;
+            border-radius: 9999px;
+            transition: all var(--transition-fast);
+        }
+
+        .comment:hover .user-karma {
+            background-color: rgba(255, 176, 0, 0.2);
+        }
+
+        .comment-time {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .comment-body {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            position: relative;
+            padding-left: 1rem;
+        }
+
+        .comment-body::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: var(--border-color);
+            border-radius: 9999px;
+            transition: background-color var(--transition-fast);
+        }
+
+        .comment:hover .comment-body::before {
+            background-color: var(--accent);
+        }
+
+        /* Comunidades */
+        .communities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .community-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            transition: all var(--transition-medium);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .community-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, var(--accent), transparent);
+            opacity: 0;
+            transition: opacity var(--transition-medium);
+        }
+
+        .community-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent);
+            box-shadow: 0 8px 32px rgba(255, 69, 0, 0.15);
+        }
+
+        .community-card:hover::after {
+            opacity: 1;
+        }
+
+        .community-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .community-icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            background-color: rgba(255, 69, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            transition: all var(--transition-medium);
+            border: 2px solid transparent;
+        }
+
+        .community-card:hover .community-icon {
+            background-color: var(--accent);
+            color: white;
+            transform: scale(1.1) rotate(10deg);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .community-name {
+            color: var(--accent);
+            font-size: 1.25rem;
+            font-weight: 600;
+            transition: all var(--transition-fast);
+        }
+
+        .community-card:hover .community-name {
+            transform: translateX(5px);
+        }
+
+        .community-stats {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: var(--radius-sm);
+            transition: all var(--transition-fast);
+        }
+
+        .community-stats:hover {
+            background: rgba(255, 69, 0, 0.1);
+            color: var(--accent);
+        }
+
+        .community-description {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 1.25rem;
+            line-height: 1.5;
+            position: relative;
+            padding-left: 1rem;
+        }
+
+        .community-description::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: var(--border-color);
+            border-radius: 9999px;
+            transition: background-color var(--transition-fast);
+        }
+
+        .community-card:hover .community-description::before {
+            background-color: var(--accent);
+        }
+
+        .moderators-section {
+            border-top: 1px solid var(--border-color);
+            margin-top: 1rem;
+            padding-top: 1rem;
+        }
+
+        .moderators-title {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .moderators-title svg {
+            color: var(--accent);
+        }
+
+        .moderators-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .moderator-tag {
+            background: linear-gradient(145deg, rgba(255, 69, 0, 0.1), rgba(255, 69, 0, 0.05));
+            padding: 0.5rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all var(--transition-fast);
+            border: 1px solid rgba(255, 69, 0, 0.2);
+        }
+
+        .moderator-tag:hover {
+            transform: translateY(-2px);
+            background: var(--accent);
+            color: white;
+            border-color: transparent;
+        }
+
+        .karma-badge {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .moderator-tag:hover .karma-badge {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Tooltips */
+        .tooltip {
+            position: absolute;
+            background: var(--bg-card);
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            pointer-events: none;
+            opacity: 0;
+            transform: translateY(8px);
+            transition: all var(--transition-fast);
+            z-index: 100;
+            border: 1px solid var(--border-color);
+        }
+
+        [data-tooltip]:hover + .tooltip {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Barra de progreso */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--accent);
+            transform-origin: 0 50%;
+            transform: scaleX(0);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            z-index: 1000;
+        }
+
+        .progress-bar.loading {
+            opacity: 1;
+            animation: progress 1s infinite linear;
+        }
+
+        @keyframes progress {
+            0% { transform: scaleX(0); }
+            50% { transform: scaleX(0.5); }
+            100% { transform: scaleX(1); }
+        }
+
+        /* Elementos decorativos */
+        .snoo-decoration {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 80px;
+            height: 80px;
+            opacity: 0.1;
+            pointer-events: none;
+            z-index: -1;
+            transition: all var(--transition-medium);
+        }
+
+        .snoo-decoration:hover {
+            opacity: 0.2;
+            transform: rotate(10deg);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { 
+                padding: 1rem; 
+            }
+            
+            .post-container {
+                flex-direction: column;
+            }
+            
+            .vote-buttons {
+                flex-direction: row;
+                justify-content: center;
+                padding: 0.5rem;
+            }
+            
+            .stats-grid { 
+                grid-template-columns: 1fr; 
+            }
+            
+            .communities-grid { 
+                grid-template-columns: 1fr; 
+            }
+            
+            .post-meta { 
+                flex-direction: column; 
+                align-items: flex-start; 
+            }
+            
+            .section-title {
+                font-size: 1.25rem;
+            }
+            
+            .card {
+                padding: 1rem;
+            }
+            
+            .post-title {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+
+        /* Animaciones de carga */
+        .loading-skeleton {
+            background: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0.05) 25%,
+                rgba(255, 255, 255, 0.1) 50%,
+                rgba(255, 255, 255, 0.05) 75%
+            );
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Animaciones adicionales */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .float-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        /* Estilos para el botón de scroll arriba */
+        .scroll-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 3rem;
+            height: 3rem;
+            background-color: var(--accent);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all var(--transition-fast);
+            z-index: 90;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .scroll-top.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .scroll-top:hover {
+            transform: translateY(-5px);
+            background-color: var(--accent-hover);
+        }
+
+        /* Estilos para el popup de compartir */
+        .share-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            background-color: var(--bg-card);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            max-width: 90%;
+            width: 400px;
+            border: 1px solid var(--border-color);
+        }
+
+        .share-popup.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .share-popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .share-popup-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .share-popup-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+        }
+
+        .share-popup-close:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        .share-popup-content {
+            margin-bottom: 1.5rem;
+        }
+
+        .share-popup-input-container {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .share-popup-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background-color: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            transition: all var(--transition-fast);
+        }
+
+        .share-popup-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px var(--accent-light);
+        }
+
+        .share-popup-copy {
+            position: absolute;
+            right: 0.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 0.4rem 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .share-popup-copy:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .share-popup-message {
+            color: var(--success);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .share-popup-message.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .share-popup-options {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+        }
+
+        .share-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            border-radius: var(--radius-sm);
+            background-color: rgba(255, 255, 255, 0.05);
+            transition: all var(--transition-fast);
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .share-option:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .share-option-icon {
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--accent-light);
+            color: var(--accent);
+            border-radius: 50%;
+            transition: all var(--transition-fast);
+        }
+
+        .share-option:hover .share-option-icon {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        .share-option-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        /* Overlay para el popup */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    <div class="decoration decoration-1"></div>
+    <div class="decoration decoration-2"></div>
+
+    <header class="header">
+        <div class="header-content">
+            <a href="{{ data.event.url if data.event and data.event.url else '#' }}" class="logo" target="_blank">
+                <div class="logo-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M16 12a4 4 0 0 1-8 0" />
+                        <line x1="9" y1="9" x2="9.01" y2="9" />
+                        <line x1="15" y1="9" x2="15.01" y2="9" />
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <span>{{ data.tag if data.tag else 'Reddit Analytics' }}</span>
+                    <span class="logo-subtitle">Insights & Data</span>
+                </div>
+            </a>
+
+            <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark/light mode">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="sun-icon">
+                    <circle cx="12" cy="12" r="5" />
+                    <line x1="12" y1="1" x2="12" y2="3" />
+                    <line x1="12" y1="21" x2="12" y2="23" />
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                    <line x1="1" y1="12" x2="3" y2="12" />
+                    <line x1="21" y1="12" x2="23" y2="12" />
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                </svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="moon-icon">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Post Principal -->
+        <div class="card" id="postCard">
+            <div class="section-title">
+                <div class="section-title-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+                        <polyline points="13 2 13 9 20 9" />
+                    </svg>
+                </div>
+                <span>Último Post Analizado</span>
+            </div>
+
+
+            <div class="post-container">
+                <div class="vote-buttons">
+                    <button class="vote-button upvote" aria-label="Upvote">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 19V5M5 12l7-7 7 7" />
+                        </svg>
+                    </button>
+                    <span class="vote-count">{{ data.event.score if data.event and data.event.score is defined else 0 }}</span>
+                    <button class="vote-button downvote" aria-label="Downvote">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 5v14M5 12l7 7 7-7" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="post-content">
+                    <div class="post-header">
+                        <div class="post-meta">
+                            <div class="meta-item" data-tooltip="Subreddit">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <path d="M16 12a4 4 0 0 1-8 0" />
+                                    <line x1="9" y1="9" x2="9.01" y2="9" />
+                                    <line x1="15" y1="9" x2="15.01" y2="9" />
+                                </svg>
+                                r/{{ data.event.subreddit if data.event and data.event.subreddit else 'all' }}
+                                <div class="tooltip">Comunidad</div>
+                            </div>
+                            <span class="meta-separator">•</span>
+                            <div class="meta-item" data-tooltip="Autor">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                    <circle cx="12" cy="7" r="4" />
+                                </svg>
+                                {{ data.event.author.name if data.event and data.event.author and data.event.author.name else 'Unknown' }}
+                                <div class="tooltip">Autor del post</div>
+                            </div>
+                            <span class="meta-separator">•</span>
+                            <div class="meta-item" data-tooltip="Fecha">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                                    <line x1="16" y1="2" x2="16" y2="6" />
+                                    <line x1="8" y1="2" x2="8" y2="6" />
+                                    <line x1="3" y1="10" x2="21" y2="10" />
+                                </svg>
+                                {{ data.event.created_at if data.event and data.event.created_at else 'N/A' }}
+                                <div class="tooltip">Fecha de publicación</div>
+                            </div>
+                        </div>
+
+                        <h1 class="post-title">{{ data.event.title if data.event and data.event.title else 'No title available' }}</h1>
+                    </div>
+
+                    <div class="post-body">
+                        {{ data.event.body if data.event and data.event.body else 'No content available' }}
+                    </div>
+
+                    {% if data.event.media %} {% if data.event.media|length > 0 %}
+                    <div class="media-container" id="mediaContainer">
+                        {% for item in data.event.media %} {% if item.type == "image" %}
+                        <img src="{{ item.url | safe }}" class="media-slide" alt="Imagen del post" loading="lazy"> {% elif item.type == "video" %}
+                        <video controls class="media-slide" preload="metadata">
+                            <source src="{{ item.url | safe }}" type="video/mp4"> Tu navegador no soporta el elemento de video.
+                        </video>
+                        {% endif %} {% endfor %} {% if data.event.media|length > 1 %}
+                        <button class="slide-nav prev" id="prevSlide" aria-label="Anterior">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M15 18l-6-6 6-6" />
+                            </svg>
+                        </button>
+                        <button class="slide-nav next" id="nextSlide" aria-label="Siguiente">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 18l6-6-6-6" />
+                            </svg>
+                        </button>
+
+                        <div class="slide-indicator" id="slideIndicator">
+                            {% for item in data.event.media %}
+                            <div class="slide-dot" data-index="{{ loop.index0 }}"></div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %} {% endif %}
+
+                    <div class="post-actions">
+                        <button class="action-button" id="commentsButton">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                            </svg>
+                            {{ data.engagement.total_comments if data.engagement and data.engagement.total_comments is defined else 0 }} Comentarios </button>
+                        <button class="action-button" id="awardsButton">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                            Premios
+                        </button>
+                        <button class="action-button" id="shareButton">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="18" cy="5" r="3" />
+                                <circle cx="6" cy="12" r="3" />
+                                <circle cx="18" cy="19" r="3" />
+                                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                            </svg>
+                            Compartir
+                        </button>
+                        <button class="action-button" id="saveButton">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+                            </svg>
+                            Guardar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="card" id="statsCard">
+            <div class="section-title">
+                <div class="section-title-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                </div>
+                <span>Métricas de Engagement</span>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card" data-tooltip="Total de comentarios">
+                    <div class="stat-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-label">Total Comentarios</div>
+                        <div class="stat-value">{{ data.engagement.total_comments if data.engagement and data.engagement.total_comments is defined else 0 }}</div>                    </div>
+                    <div class="tooltip">Número total de comentarios en el post</div>
+                </div>
+
+                <div class="stat-card" data-tooltip="Total de upvotes">
+                    <div class="stat-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-label">Upvotes</div>
+                        <div class="stat-value">{{ data.event.score if data.event and data.event.score is defined else 0 }}</div>
+                    </div>
+                    <div class="tooltip">Número total de votos positivos</div>
+                </div>
+
+                <div class="stat-card" data-tooltip="Ratio de engagement">
+                    <div class="stat-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-label">Ratio de Engagement</div>
+                        <div class="stat-value">
+                            {% set engagement = 0 %} {% if data.event and data.event.score is defined and data.comments is defined %} {% set engagement = (data.event.score + data.comments|length) / 100 %} {{ "%.2f"|format(engagement) }}% {% else %} 0.00% {% endif %}
+                        </div>
+                    </div>
+                    <div class="tooltip">Ratio de interacción con el contenido</div>
+                </div>
+
+                <div class="stat-card" data-tooltip="Tiempo de actividad">
+                    <div class="stat-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <polyline points="12 6 12 12 16 14" />
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-label">Tiempo Activo</div>
+                        <div class="stat-value">
+                            {% if data.event and data.event.created_at %} {% set date_str = data.event.created_at %} {% if date_str|length > 10 and '-' in date_str %} {% set date_parts = date_str.split(' ')[0].split('-') %} {% if date_parts|length >= 3 %} {{ date_parts[2] }}/{{
+                            date_parts[1] }}/{{ date_parts[0] }} {% else %} {{ date_str }} {% endif %} {% else %} {{ date_str }} {% endif %} {% else %} 2h {% endif %}
+                        </div>
+                    </div>
+                    <div class="tooltip">Tiempo desde la publicación</div>
+                </div>
+            </div>
+
+            {% if data.comments and data.comments|length > 0 %}
+            <div class="section-title" style="font-size: 1.25rem; margin-top: 2rem;">
+                <div class="section-title-icon" style="width: 32px; height: 32px;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg>
+                </div>
+                <span>Comentarios Destacados</span>
+            </div>
+            <div class="comments-list">
+                {% for comment in data.comments %}
+                <div class="comment">
+                    <div class="comment-header">
+                        <div class="user-avatar">
+                            {{ comment.user.name|slice(2, 2)|upper if comment.user.name else 'U' }}
+                        </div>
+                        <div class="comment-user-info">
+                            <div class="comment-username">
+                                {{ comment.user.name }}
+                                <span class="user-karma">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <circle cx="12" cy="12" r="10"/>
+                                            <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+                                            <line x1="9" y1="9" x2="9.01" y2="9"/>
+                                            <line x1="15" y1="9" x2="15.01" y2="9"/>
+                                        </svg>
+                                        {{ 1000 + loop.index * 500 }} karma
+                                    </span>
+                            </div>
+                            <div class="comment-time">hace {{ loop.index * 2 }} horas</div>
+                        </div>
+                    </div>
+                    <div class="comment-body">
+                        {{ comment.body|default('N/A') }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+    <!-- Comunidades -->
+    <div class="card" id="communitiesCard">
+        <div class="section-title">
+            <div class="section-title-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+            </div>
+            <span>Comunidades Relacionadas</span>
+        </div>
+
+        <div class="communities-grid">
+            {% if data.communities and data.communities|length > 0 %} {% for community in data.communities %}
+            <div class="community-card">
+                <div class="community-header">
+                    <div class="community-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M16 12a4 4 0 0 1-8 0" />
+                            <line x1="9" y1="9" x2="9.01" y2="9" />
+                            <line x1="15" y1="9" x2="15.01" y2="9" />
+                        </svg>
+                    </div>
+                    <h3 class="community-name">r/{{ community.name }}</h3>
+                </div>
+
+                <div class="community-stats">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
+                    {{ community.size if community.size is defined else 'N/A' }} suscriptores
+                </div>
+
+                <p class="community-description">
+                    {{ community.description if community.description else 'No description available' }}
+                </p>
+
+                <div class="moderators-section">
+                    <p class="moderators-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        </svg>
+                        Moderadores Activos:
+                    </p>
+                    <div class="moderators-list">
+                        {% for user in community.active_users %}
+                        <div class="moderator-tag">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                <circle cx="12" cy="7" r="4" />
+                            </svg>
+                            <span>{{ user.name }}</span>
+                            <span class="karma-badge">
+                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                                </svg>
+                                                {{ user.post_karma }}/{{ user.comment_karma }}
+                                            </span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %} {% else %}
+            <div class="text-center text-gray-400 col-span-full">
+                No se encontraron comunidades.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Decoración de Snoo (mascota de Reddit) -->
+    <div class="snoo-decoration float-animation">
+        <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+            <path d="M10 0C4.5 0 0 4.5 0 10s4.5 10 10 10 10-4.5 10-10S15.5 0 10 0zm5.8 11.1c.1.2.1.3.1.5 0 1.2-1.4 2.2-3.2 2.2-.9 0-1.7-.3-2.2-.7-.6.4-1.3.7-2.2.7-1.8 0-3.2-1-3.2-2.2 0-.2 0-.3.1-.5-1-.5-1.6-1.2-1.6-2 0-1.4 1.6-2.4 3.7-2.4.6 0 1.2.1 1.7.3.5-.2 1.1-.3 1.7-.3 2 0 3.7 1.1 3.7 2.4-.2.8-.8 1.5-1.6 2z"
+            />
+            <circle cx="7.5" cy="9.5" r="1" />
+            <circle cx="12.5" cy="9.5" r="1" />
+            <path d="M12.7 12.3c-.4.4-1.1.6-2.2.6s-1.8-.2-2.2-.6c-.1-.1-.3-.1-.4 0s-.1.3 0 .4c.5.5 1.3.8 2.6.8s2.1-.3 2.6-.8c.1-.1.1-.3 0-.4-.1-.1-.3-.1-.4 0z" />
+        </svg>
+    </div>
+
+    <!-- Botón de scroll arriba -->
+    <button class="scroll-top" id="scrollTop" aria-label="Scroll to top">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 19V5M5 12l7-7 7 7" />
+        </svg>
+    </button>
+
+    <!-- Popup de compartir -->
+    <div class="overlay" id="shareOverlay"></div>
+    <div class="share-popup" id="sharePopup">
+        <div class="share-popup-header">
+            <h3 class="share-popup-title">Compartir Post</h3>
+            <button class="share-popup-close" id="closeSharePopup">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="share-popup-content">
+            <div class="share-popup-input-container">
+                <input type="text" class="share-popup-input" id="shareLink" readonly value="{{ data.event.url if data.event and data.event.url else 'https://reddit.com/r/programming/comments/example' }}">
+                <button class="share-popup-copy" id="copyShareLink">Copiar</button>
+            </div>
+            <div class="share-popup-message" id="copyMessage">¡Enlace copiado al portapapeles!</div>
+            <div class="share-popup-options">
+                <div class="share-option" data-platform="twitter">
+                    <div class="share-option-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path>
+                        </svg>
+                    </div>
+                    <span class="share-option-label">Twitter</span>
+                </div>
+                <div class="share-option" data-platform="facebook">
+                    <div class="share-option-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+                        </svg>
+                    </div>
+                    <span class="share-option-label">Facebook</span>
+                </div>
+                <div class="share-option" data-platform="email">
+                    <div class="share-option-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                            <polyline points="22,6 12,13 2,6"></polyline>
+                        </svg>
+                    </div>
+                    <span class="share-option-label">Email</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let slideIndex = 0;
+        const slides = document.getElementsByClassName("media-slide");
+        const progressBar = document.querySelector('#progressBar');
+        let isLoading = false;
+
+        // Función para mostrar/ocultar la barra de progreso
+        function toggleLoading(show) {
+            isLoading = show;
+            progressBar.classList.toggle('loading', show);
+        }
+
+        // Función para mostrar slides
+        function showSlide(index) {
+            if (slides.length === 0) return;
+        
+            // Normalizar el índice
+            if (index >= slides.length) slideIndex = 0;
+            if (index < 0) slideIndex = slides.length - 1;
+        
+            // Ocultar todos los slides
+            Array.from(slides).forEach(slide => {
+                slide.style.display = "none";
+                slide.classList.remove("active");
+            });
+        
+            // Mostrar el slide actual con animación
+            slides[slideIndex].style.display = "block";
+            setTimeout(() => {
+                slides[slideIndex].classList.add("active");
+            }, 10);
+        
+            // Actualizar indicadores de slide
+            updateSlideIndicators();
+        }
+
+        // Función para actualizar los indicadores de slide
+        function updateSlideIndicators() {
+            const dots = document.querySelectorAll('.slide-dot');
+            if (dots.length === 0) return;
+        
+            dots.forEach((dot, index) => {
+                if (index === slideIndex) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            });
+        }
+
+        // Función para cambiar slides
+        function changeSlide(n) {
+            slideIndex += n;
+            showSlide(slideIndex);
+        }
+
+        // Función para animar la entrada de las cards
+        function animateCards() {
+            const cards = document.querySelectorAll('.card');
+        
+            // Usar IntersectionObserver si está disponible
+            if ('IntersectionObserver' in window) {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('visible');
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, {
+                    threshold: 0.1
+                });
+
+                cards.forEach(card => observer.observe(card));
+            } else {
+                // Fallback para navegadores que no soportan IntersectionObserver
+                cards.forEach((card, index) => {
+                    setTimeout(() => {
+                        card.classList.add('visible');
+                    }, 100 * index);
+                });
+            }
+        }
+
+        // Función para manejar el botón de scroll arriba
+        function handleScrollButton() {
+            const scrollButton = document.getElementById('scrollTop');
+        
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 300) {
+                    scrollButton.classList.add('visible');
+                } else {
+                    scrollButton.classList.remove('visible');
+                }
+            });
+        
+            scrollButton.addEventListener('click', () => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        }
+
+        // Función para manejar el cambio de tema
+        function setupThemeToggle() {
+            const themeToggle = document.getElementById('themeToggle');
+            const body = document.body;
+        
+            // Verificar si hay una preferencia guardada
+            const savedTheme = localStorage.getItem('redditAnalyticsTheme');
+            if (savedTheme === 'light') {
+                body.classList.add('light-theme');
+            }
+        
+            themeToggle.addEventListener('click', () => {
+                // Cambiar el tema
+                body.classList.toggle('light-theme');
+            
+                // Guardar la preferencia
+                const currentTheme = body.classList.contains('light-theme') ? 'light' : 'dark';
+                localStorage.setItem('redditAnalyticsTheme', currentTheme);
+            });
+        }
+
+        // Función para manejar el popup de compartir
+        function setupSharePopup() {
+            const shareButton = document.getElementById('shareButton');
+            const sharePopup = document.getElementById('sharePopup');
+            const shareOverlay = document.getElementById('shareOverlay');
+            const closeSharePopup = document.getElementById('closeSharePopup');
+            const copyShareLink = document.getElementById('copyShareLink');
+            const shareLink = document.getElementById('shareLink');
+            const copyMessage = document.getElementById('copyMessage');
+            const shareOptions = document.querySelectorAll('.share-option');
+        
+            // Abrir popup
+            shareButton.addEventListener('click', () => {
+                sharePopup.classList.add('active');
+                shareOverlay.classList.add('active');
+            });
+        
+            // Cerrar popup
+            closeSharePopup.addEventListener('click', () => {
+                sharePopup.classList.remove('active');
+                shareOverlay.classList.remove('active');
+            });
+        
+            shareOverlay.addEventListener('click', () => {
+                sharePopup.classList.remove('active');
+                shareOverlay.classList.remove('active');
+            });
+        
+            // Copiar enlace
+            copyShareLink.addEventListener('click', () => {
+                shareLink.select();
+                document.execCommand('copy');
+            
+                copyMessage.classList.add('active');
+                setTimeout(() => {
+                    copyMessage.classList.remove('active');
+                }, 3000);
+            });
+        
+            // Compartir en redes sociales
+            shareOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    const platform = option.getAttribute('data-platform');
+                    const url = shareLink.value;
+                    const title = document.querySelector('.post-title').textContent;
+                
+                    let shareUrl = '';
+                
+                    switch(platform) {
+                        case 'twitter':
+                            shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`;
+                            break;
+                        case 'facebook':
+                            shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+                            break;
+                        case 'email':
+                            shareUrl = `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(url)}`;
+                            break;
+                    }
+                
+                    if (shareUrl) {
+                        window.open(shareUrl, '_blank');
+                    }
+                });
+            });
+        }
+
+        // Función para manejar la descarga de medios
+        function setupSaveButton() {
+            const saveButton = document.getElementById('saveButton');
+        
+            saveButton.addEventListener('click', () => {
+                // Verificar si hay medios para guardar
+                if (slides.length === 0) {
+                    alert('No hay medios disponibles para guardar.');
+                    return;
+                }
+            
+                const currentMedia = slides[slideIndex];
+            
+                if (currentMedia.tagName.toLowerCase() === 'img') {
+                    // Es una imagen
+                    const link = document.createElement('a');
+                    link.href = currentMedia.src;
+                    link.download = 'reddit-image-' + Date.now() + '.jpg';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                } else if (currentMedia.tagName.toLowerCase() === 'video') {
+                    // Es un video
+                    const videoSrc = currentMedia.querySelector('source').src;
+                    const link = document.createElement('a');
+                    link.href = videoSrc;
+                    link.download = 'reddit-video-' + Date.now() + '.mp4';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
+            });
+        }
+
+        // Inicialización cuando el DOM está listo
+        document.addEventListener('DOMContentLoaded', () => {
+            // Mostrar el primer slide si hay múltiples medios
+            if (slides.length > 0) {
+                showSlide(slideIndex);
+            }
+
+            // Iniciar animaciones de cards
+            animateCards();
+
+            // Configurar botones de navegación de slides
+            const prevButton = document.getElementById('prevSlide');
+            const nextButton = document.getElementById('nextSlide');
+        
+            if (prevButton && nextButton) {
+                prevButton.addEventListener('click', () => changeSlide(-1));
+                nextButton.addEventListener('click', () => changeSlide(1));
+            }
+        
+            // Configurar indicadores de slide
+            const dots = document.querySelectorAll('.slide-dot');
+            dots.forEach((dot, index) => {
+                dot.addEventListener('click', () => {
+                    slideIndex = index;
+                    showSlide(slideIndex);
+                });
+            });
+
+            // Configurar botón de scroll arriba
+            handleScrollButton();
+        
+            // Configurar toggle de tema
+            setupThemeToggle();
+        
+            // Configurar popup de compartir
+            setupSharePopup();
+        
+            // Configurar botón de guardar
+            setupSaveButton();
+
+            // Simular carga inicial
+            toggleLoading(true);
+            setTimeout(() => {
+                toggleLoading(false);
+            }, 1000);
+        });
+
+        // Manejar errores de carga de imágenes
+        document.querySelectorAll('img').forEach(img => {
+            img.addEventListener('error', function() {
+                this.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23FF4500" stroke-width="2"%3E%3Crect x="3" y="3" width="18" height="18" rx="2" ry="2"%3E%3C/rect%3E%3Ccircle cx="8.5" cy="8.5" r="1.5"%3E%3C/circle%3E%3Cpolyline points="21 15 16 10 5 21"%3E%3C/polyline%3E%3C/svg%3E';
+            this.alt = 'Error al cargar la imagen';
+            this.classList.add('error-image');
+        });
+    });
+
+    // Detectar preferencia de reducción de movimiento
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (prefersReducedMotion.matches) {
+        document.documentElement.style.setProperty('--transition-fast', '0s');
+        document.documentElement.style.setProperty('--transition-medium', '0s');
+    }
+    </script>
+</body>
+</html>

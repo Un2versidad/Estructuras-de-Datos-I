@@ -146,7 +146,7 @@ async def get_latest_event(reddit, subreddit_name, search_tag):
         logger.error(f"Error fetching latest event: {e}")
         return None
 
-async def get_comments(reddit, submission_id, comment_limit=10):
+async def get_comments(reddit, submission_id, comment_limit=20):
     try:
         if not submission_id:
             logger.warning("No submission ID provided for comments")
@@ -156,27 +156,44 @@ async def get_comments(reddit, submission_id, comment_limit=10):
         await submission.load()
         logger.info(f"Fetched submission: {submission.title} with {submission.score} upvotes")
 
-        # Obtener el conteo total de comentarios antes de limitar
+        # Obtener el conteo total de comentarios
         total_comments = submission.num_comments
         logger.info(f"Total comments in submission: {total_comments}")
 
-        # Limitar el número de comentarios expandidos con replace_more
-        await submission.comments.replace_more(limit=0)  # No expandir más comentarios para mejorar rendimiento
+        # Expandir todos los comentarios disponibles
+        await submission.comments.replace_more(limit=None)  # Expandir todos los "MoreComments"
         comment_list = submission.comments.list()
 
-        # Tomar solo los primeros 'comment_limit' comentarios (o menos si no hay suficientes)
-        limited_comments = comment_list[:comment_limit]
-        logger.info(f"Limiting to {len(limited_comments)} comments out of {total_comments}")
+        # Filtrar comentarios válidos (ignorar comentarios eliminados o sin cuerpo)
+        valid_comments = [
+            comment for comment in comment_list
+            if hasattr(comment, 'body') and comment.body and comment.body != "[deleted]" and comment.body != "[removed]"
+        ]
 
+        # Log para depurar cuántos comentarios válidos se encontraron
+        logger.info(f"Found {len(valid_comments)} valid comments out of {total_comments}")
+
+        # Si hay menos de 20 comentarios, mostramos todos; si no, aplicamos el límite
+        effective_limit = len(valid_comments) if len(valid_comments) <= 20 else comment_limit
+        limited_comments = valid_comments[:effective_limit]
+        logger.info(f"Showing {len(limited_comments)} comments out of {total_comments} (valid: {len(valid_comments)})")
+
+        # Procesar los comentarios válidos
         comments = []
         for comment in limited_comments:
             if hasattr(comment, 'author') and comment.author:
-                author_info = await get_user_info(reddit, comment.author)
-                comments.append({
-                    "user": author_info,
-                    "body": comment.body,
-                    "score": comment.score
-                })
+                try:
+                    author_info = await get_user_info(reddit, comment.author)
+                    comments.append({
+                        "user": author_info,
+                        "body": comment.body,
+                        "score": comment.score
+                    })
+                except Exception as e:
+                    logger.warning(f"Error processing comment by {comment.author}: {e}")
+                    continue
+            else:
+                logger.warning(f"Skipping comment with missing or invalid author: {comment.id}")
 
         return {
             "total_comments": total_comments,
@@ -246,9 +263,10 @@ async def generate_report(reddit, search_tag):
             }
         }
 
-    # Obtener comentarios limitados
-    comments_data = await get_comments(reddit, latest_event["id"], comment_limit=9)
+    # Obtener todos los comentarios disponibles
+    comments_data = await get_comments(reddit, latest_event["id"])
     comments = comments_data["comments"]
+    logger.info(f"Passing {len(comments)} comments to the HTML")
 
     communities = await get_communities(reddit, search_tag)
 
@@ -256,8 +274,8 @@ async def generate_report(reddit, search_tag):
         search_tag.lower(): {
             "tag": search_tag,
             "event": latest_event,
-            "engagement": latest_event["engagement"],  # Pasamos las métricas de engagement
-            "comments": comments,  # Lista limitada de comentarios
+            "engagement": latest_event["engagement"],
+            "comments": comments,
             "communities": communities
         }
     }

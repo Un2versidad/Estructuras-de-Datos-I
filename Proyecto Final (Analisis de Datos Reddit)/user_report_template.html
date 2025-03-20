@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Informe de usuario {{ username }} - Reddit Analytics</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M19 11H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2Z'></path><path d='M7 7V5c0-1.1.9-2 2-2h6a2 2 0 0 1 2 2v2'></path><circle cx='12' cy='16' r='1'></circle></svg>"
+    type="image/svg+xml">
+    <style>
+        :root {
+            /* Tema oscuro (default) */
+            --bg-dark: #1A1A1B;
+            --bg-card: #272729;
+            --bg-card-hover: #2D2D30;
+            --bg-highlight: #343536;
+            --text-primary: #E5E5E5;
+            --text-secondary: #9CA3AF;
+            --accent: #FF4500;
+            --accent-hover: #FF5722;
+            --accent-light: rgba(255, 69, 0, 0.1);
+            --accent-medium: rgba(255, 69, 0, 0.3);
+            --border-color: #343536;
+            --success: #46BD62;
+            --warning: #FFC857;
+            --error: #FF4D6A;
+            --upvote: #FF4500;
+            --downvote: #7193FF;
+            --karma: #FFB000;
+            
+            /* Sombras y efectos */
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            --card-hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            --transition-fast: 0.2s ease;
+            --transition-medium: 0.3s ease;
+            
+            /* Bordes */
+            --radius-sm: 0.5rem;
+            --radius-md: 0.75rem;
+            --radius-lg: 1rem;
+            --radius-xl: 1.5rem;
+        }
+
+        /* Tema claro */
+        body.light-theme {
+            --bg-dark: #F5F5F5;
+            --bg-card: #FFFFFF;
+            --bg-card-hover: #F9F9F9;
+            --bg-highlight: #EFEFEF;
+            --text-primary: #1A1A1B;
+            --text-secondary: #4A4A4B;
+            --border-color: #E0E0E0;
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            --card-hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Estilos para el botón de tema */
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--bg-highlight);
+            color: var(--text-primary);
+        }
+
+        .theme-toggle .sun-icon,
+        .theme-toggle .moon-icon {
+            position: absolute;
+            transition: transform 0.5s ease, opacity 0.3s ease;
+        }
+
+        body:not(.light-theme) .sun-icon {
+            opacity: 1;
+            transform: rotate(0);
+        }
+
+        body:not(.light-theme) .moon-icon {
+            opacity: 0;
+            transform: rotate(90deg);
+        }
+
+        body.light-theme .sun-icon {
+            opacity: 0;
+            transform: rotate(-90deg);
+        }
+
+        body.light-theme .moon-icon {
+            opacity: 1;
+            transform: rotate(0);
+        }
+
+        /* Ajuste para el patrón de fondo en tema claro */
+        body.light-theme::before {
+            opacity: 0.2;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23FF4500' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.5;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        /* Header y navegación */
+        .header {
+            position: sticky;
+            top: 0;
+            background-color: rgba(26, 26, 27, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 100;
+            padding: 0.75rem 0;
+            transition: background-color var(--transition-medium);
+        }
+
+        body.light-theme .header {
+            background-color: rgba(245, 245, 245, 0.95);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 1.25rem;
+            text-decoration: none;
+            transition: transform var(--transition-fast);
+            position: relative;
+        }
+
+        .logo:hover {
+            transform: translateY(-1px);
+        }
+
+        .logo-icon {
+            transition: transform var(--transition-medium);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--accent);
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+
+        .logo:hover .logo-icon {
+            transform: rotate(20deg);
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo-subtitle {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        /* Tarjetas y contenedores */
+        .card {
+            background-color: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border-color);
+            transition: all var(--transition-medium);
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--card-hover-shadow);
+            border-color: var(--accent);
+            background-color: var(--bg-card-hover);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, var(--accent), transparent);
+            opacity: 0;
+            transition: opacity var(--transition-medium);
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        /* Decoración de fondo */
+        .decoration {
+            position: absolute;
+            opacity: 0.05;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .decoration-1 {
+            top: 20%;
+            left: 5%;
+            width: 300px;
+            height: 300px;
+            background-color: var(--accent);
+            border-radius: 50%;
+            filter: blur(100px);
+        }
+
+        .decoration-2 {
+            bottom: 10%;
+            right: 5%;
+            width: 250px;
+            height: 250px;
+            background-color: var(--karma);
+            border-radius: 50%;
+            filter: blur(80px);
+        }
+
+        /* Títulos de sección */
+        .section-title {
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            position: relative;
+            padding-bottom: 0.75rem;
+        }
+
+        .section-title-icon {
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--accent-light);
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            transition: all var(--transition-medium);
+        }
+
+        .card:hover .section-title-icon {
+            background-color: var(--accent);
+            color: white;
+            transform: rotate(5deg);
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to right, var(--accent), transparent);
+        }
+
+        /* Elementos de lista */
+        .info-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .info-item {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            transition: all var(--transition-medium);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        .info-item:hover {
+            transform: translateY(-4px);
+            background: linear-gradient(145deg, rgba(255, 69, 0, 0.1), rgba(255, 69, 0, 0.05));
+            border-color: var(--accent);
+        }
+
+        .info-label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .info-label svg {
+            color: var(--accent);
+        }
+
+        .info-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            transition: all var(--transition-fast);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            word-break: break-word;
+        }
+
+        .info-item:hover .info-value {
+            color: var(--accent);
+        }
+
+        /* Listas */
+        .data-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .data-item {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            transition: all var(--transition-fast);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .data-item:hover {
+            transform: translateX(4px);
+            background: linear-gradient(145deg, rgba(255, 69, 0, 0.1), rgba(255, 69, 0, 0.05));
+            border-color: var(--accent);
+        }
+
+        .data-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: color var(--transition-fast);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 60%;
+        }
+
+        .data-item:hover .data-name {
+            color: var(--accent);
+        }
+
+        .data-count {
+            background-color: var(--accent-light);
+            color: var(--accent);
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all var(--transition-fast);
+        }
+
+        .data-item:hover .data-count {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { 
+                padding: 1rem; 
+            }
+            
+            .info-list,
+            .data-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .section-title {
+                font-size: 1.25rem;
+            }
+            
+            .card {
+                padding: 1rem;
+            }
+        }
+
+        /* Botón de scroll arriba */
+        .scroll-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 3rem;
+            height: 3rem;
+            background-color: var(--accent);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all var(--transition-fast);
+            z-index: 90;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .scroll-top.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .scroll-top:hover {
+            transform: translateY(-5px);
+            background-color: var(--accent-hover);
+        }
+    </style>
+</head>
+<body>
+    <div class="decoration decoration-1"></div>
+    <div class="decoration decoration-2"></div>
+    
+    <header class="header">
+        <div class="header-content">
+            <a href="#" class="logo">
+                <div class="logo-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M16 12a4 4 0 0 1-8 0"/>
+                        <line x1="9" y1="9" x2="9.01" y2="9"/>
+                        <line x1="15" y1="9" x2="15.01" y2="9"/>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <span>Reddit Analytics</span>
+                    <span class="logo-subtitle">Informe de Usuario</span>
+                </div>
+            </a>
+            
+            <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark/light mode">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="sun-icon">
+                    <circle cx="12" cy="12" r="5"/>
+                    <line x1="12" y1="1" x2="12" y2="3"/>
+                    <line x1="12" y1="21" x2="12" y2="23"/>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                    <line x1="1" y1="12" x2="3" y2="12"/>
+                    <line x1="21" y1="12" x2="23" y2="12"/>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                </svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="moon-icon">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+            </button>
+        </div>
+    </header>
+    
+    <div class="container">
+        <!-- Perfil de Usuario -->
+        <div class="card" id="userProfileCard">
+            <div class="section-title">
+                <div class="section-title-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                </div>
+                <span>Perfil de Usuario: {{ username }}</span>
+            </div>
+            
+            <div class="info-list">
+                <div class="info-item">
+                    <div class="info-label">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="16" y1="2" x2="16" y2="6"/>
+                            <line x1="8" y1="2" x2="8" y2="6"/>
+                            <line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                        Fecha de unión
+                    </div>
+                    <div class="info-value">{{ joined_date }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                        Comentarios
+                    </div>
+                    <div class="info-value">{{ comments }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+                            <polyline points="13 2 13 9 20 9"/>
+                        </svg>
+                        Publicaciones
+                    </div>
+                    <div class="info-value">{{ submissions }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+                        </svg>
+                        Karma (Comentarios)
+                    </div>
+                    <div class="info-value">{{ karma_comment }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+                        </svg>
+                        Karma (Publicaciones)
+                    </div>
+                    <div class="info-value">{{ karma_submission }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                        </svg>
+                        % Controversial
+                    </div>
+                    <div class="info-value">{{ controversial_percent }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Subreddits -->
+        <div class="card" id="subredditsCard">
+            <div class="section-title">
+                <div class="section-title-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M16 12a4 4 0 0 1-8 0"/>
+                        <line x1="9" y1="9" x2="9.01" y2="9"/>
+                        <line x1="15" y1="9" x2="15.01" y2="9"/>
+                    </svg>
+                </div>
+                <span>Top Subreddits</span>
+            </div>
+            
+            <div class="data-list">
+                {% for subreddit in top_subreddits %}
+                    <div class="data-item">
+                        <div class="data-name">r/{{ subreddit.name }}</div>
+                        <div class="data-count">{{ subreddit.posts }}</div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Palabras más frecuentes -->
+        <div class="card" id="wordsCard">
+            <div class="section-title">
+                <div class="section-title-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                </div>
+                <span>Palabras más frecuentes</span>
+            </div>
+            
+            <div class="data-list">
+                {% for word in frequent_words %}
+                    <div class="data-item">
+                        <div class="data-name">{{ word.word }}</div>
+                        <div class="data-count">{{ word.count }}</div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Botón de scroll arriba -->
+    <button class="scroll-top" id="scrollTop" aria-label="Scroll to top">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 19V5M5 12l7-7 7 7"></path>
+        </svg>
+    </button>
+
+    <script>
+        // Función para manejar el botón de scroll arriba
+        function handleScrollButton() {
+            const scrollButton = document.getElementById('scrollTop');
+            
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 300) {
+                    scrollButton.classList.add('visible');
+                } else {
+                    scrollButton.classList.remove('visible');
+                }
+            });
+            
+            scrollButton.addEventListener('click', () => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        }
+
+        // Función para manejar el cambio de tema
+        function setupThemeToggle() {
+            const themeToggle = document.getElementById('themeToggle');
+            const body = document.body;
+            
+            // Verificar si hay una preferencia guardada
+            const savedTheme = localStorage.getItem('redditAnalyticsTheme');
+            if (savedTheme === 'light') {
+                body.classList.add('light-theme');
+            }
+            
+            themeToggle.addEventListener('click', () => {
+                // Cambiar el tema
+                body.classList.toggle('light-theme');
+                
+                // Guardar la preferencia
+                const currentTheme = body.classList.contains('light-theme') ? 'light' : 'dark';
+                localStorage.setItem('redditAnalyticsTheme', currentTheme);
+            });
+        }
+        
+        // Inicialización cuando el DOM está listo
+        document.addEventListener('DOMContentLoaded', () => {
+            // Configurar botón de scroll arriba
+            handleScrollButton();
+            
+            // Configurar toggle de tema
+            setupThemeToggle();
+            
+            console.log('Reddit Analytics cargado correctamente');
+        });
+    </script>
+</body>
+</html>

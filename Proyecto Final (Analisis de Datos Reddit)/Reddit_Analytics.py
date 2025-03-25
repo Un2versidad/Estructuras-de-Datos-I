@@ -282,7 +282,7 @@ async def scrape_reddit_user_analysis(username: str) -> None:
             analyse_button = wait.until(ec.element_to_be_clickable((By.CSS_SELECTOR, '.input-group-btn button')))
             analyse_button.click()
             wait.until(ec.presence_of_element_located((By.CSS_SELECTOR, '.summary')))
-            time.sleep(2)
+            time.sleep(30)
             soup = BeautifulSoup(driver.page_source, 'html.parser')
             user_data = {
                 'username': username,

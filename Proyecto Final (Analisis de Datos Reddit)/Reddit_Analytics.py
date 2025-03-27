@@ -272,9 +272,9 @@ async def generate_report(reddit: asyncpraw.Reddit, search_tag: str) -> Optional
 async def scrape_reddit_user_analysis(username: str) -> None:
     def sync_scrape():
         options = webdriver.ChromeOptions()
-        options.add_argument('--headless')
+        #options.add_argument('--headless')
         driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-        wait = WebDriverWait(driver, 10)
+        wait = WebDriverWait(driver, 15)
         try:
             driver.get("https://reddit-user-analyser.netlify.app/")
             search_input = wait.until(ec.presence_of_element_located((By.CSS_SELECTOR, 'input[type="text"]')))
@@ -282,7 +282,7 @@ async def scrape_reddit_user_analysis(username: str) -> None:
             analyse_button = wait.until(ec.element_to_be_clickable((By.CSS_SELECTOR, '.input-group-btn button')))
             analyse_button.click()
             wait.until(ec.presence_of_element_located((By.CSS_SELECTOR, '.summary')))
-            time.sleep(30)
+            time.sleep(45)
             soup = BeautifulSoup(driver.page_source, 'html.parser')
             user_data = {
                 'username': username,

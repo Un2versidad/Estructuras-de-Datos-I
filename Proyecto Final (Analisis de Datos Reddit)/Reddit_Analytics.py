@@ -272,7 +272,7 @@ async def generate_report(reddit: asyncpraw.Reddit, search_tag: str) -> Optional
 async def scrape_reddit_user_analysis(username: str) -> None:
     def sync_scrape():
         options = webdriver.ChromeOptions()
-        #options.add_argument('--headless')
+        options.add_argument('--headless')
         driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
         wait = WebDriverWait(driver, 15)
         try:

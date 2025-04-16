@@ -1,5 +1,4 @@
-![image](https://github.com/user-attachments/assets/d5fbdf21-dd08-4996-a538-ac40b82029cf)
-
+![image](https://github.com/user-attachments/assets/cf0aceb6-8e4a-46c1-808c-c3ca82fd3219)
 
 # 🎴 **Mascarade** (Estructura de Datos) 🤖
 

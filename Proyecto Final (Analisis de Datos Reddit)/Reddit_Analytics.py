@@ -47,7 +47,7 @@ CONFIG = {
     "community_post_limit": 5
 }
 
-# URLs de plantillas en GitHub
+# URL de plantillas en GitHub
 REPORT_TEMPLATE_URL = "https://raw.githubusercontent.com/Un2versidad/Estructuras-de-Datos-I/refs/heads/main/Proyecto%20Final%20(Analisis%20de%20Datos%20Reddit)/report.html"
 USER_REPORT_TEMPLATE_URL = "https://raw.githubusercontent.com/Un2versidad/Estructuras-de-Datos-I/refs/heads/main/Proyecto%20Final%20(Analisis%20de%20Datos%20Reddit)/user_report_template.html"
 

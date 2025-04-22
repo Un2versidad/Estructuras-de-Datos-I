@@ -9,33 +9,35 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M19 11H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2Z'></path><path d='M7 7V5c0-1.1.9-2 2-2h6a2 2 0 0 1 2 2v2'></path><circle cx='12' cy='16' r='1'></circle></svg>"
     type="image/svg+xml">
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <style>
         :root {
             /* Tema oscuro (default) */
-            --bg-dark: #1A1A1B;
+            --bg-dark: #1a1a1b;
             --bg-card: #272729;
-            --bg-card-hover: #2D2D30;
+            --bg-card-hover: #2d2d30;
             --bg-highlight: #343536;
-            --text-primary: #E5E5E5;
-            --text-secondary: #9CA3AF;
-            --accent: #FF4500;
-            --accent-hover: #FF5722;
+            --text-primary: #e5e5e5;
+            --text-secondary: #9ca3af;
+            --accent: #ff4500; /* Naranja Reddit */
+            --accent-hover: #ff5722;
             --accent-light: rgba(255, 69, 0, 0.1);
             --accent-medium: rgba(255, 69, 0, 0.3);
             --border-color: #343536;
-            --success: #46BD62;
-            --warning: #FFC857;
-            --error: #FF4D6A;
-            --upvote: #FF4500;
-            --downvote: #7193FF;
-            --karma: #FFB000;
-            
+            --success: #46bd62;
+            --warning: #ffc857;
+            --error: #ff4d6a;
+            --upvote: #ff4500;
+            --downvote: #7193ff;
+            --karma: #ffb000;
+
             /* Sombras y efectos */
             --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
             --card-hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
             --transition-fast: 0.2s ease;
             --transition-medium: 0.3s ease;
-            
+
             /* Bordes */
             --radius-sm: 0.5rem;
             --radius-md: 0.75rem;
@@ -45,13 +47,13 @@
 
         /* Tema claro */
         body.light-theme {
-            --bg-dark: #F5F5F5;
-            --bg-card: #FFFFFF;
-            --bg-card-hover: #F9F9F9;
-            --bg-highlight: #EFEFEF;
-            --text-primary: #1A1A1B;
-            --text-secondary: #4A4A4B;
-            --border-color: #E0E0E0;
+            --bg-dark: #f5f5f5;
+            --bg-card: #ffffff;
+            --bg-card-hover: #f9f9f9;
+            --bg-highlight: #efefef;
+            --text-primary: #1a1a1b;
+            --text-secondary: #4a4a4b;
+            --border-color: #e0e0e0;
             --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             --card-hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
         }
@@ -831,11 +833,16 @@
             border-color: rgba(255, 255, 255, 0.2);
         }
 
+        .community-info {
+            flex: 1;
+        }
+
         .community-name {
             color: var(--accent);
             font-size: 1.25rem;
             font-weight: 600;
             transition: all var(--transition-fast);
+            margin: 0 0 0.25rem 0;
         }
 
         .community-card:hover .community-name {
@@ -847,25 +854,25 @@
             align-items: center;
             gap: 0.75rem;
             color: var(--text-secondary);
-            margin-bottom: 1rem;
-            padding: 0.75rem;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: var(--radius-sm);
-            transition: all var(--transition-fast);
+            font-size: 0.85rem;
         }
 
-        .community-stats:hover {
-            background: rgba(255, 69, 0, 0.1);
-            color: var(--accent);
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
         }
 
         .community-description {
             color: var(--text-secondary);
             font-size: 0.95rem;
-            margin-bottom: 1.25rem;
+            margin: 1rem 0;
             line-height: 1.5;
             position: relative;
             padding-left: 1rem;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
         }
 
         .community-description::before {
@@ -882,6 +889,41 @@
 
         .community-card:hover .community-description::before {
             background-color: var(--accent);
+        }
+
+        .community-metrics {
+            margin: 1rem 0;
+        }
+
+        .metric-item {
+            margin-bottom: 0.75rem;
+        }
+
+        .metric-label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .metric-bar-container {
+            height: 6px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 0.25rem;
+        }
+
+        .metric-bar {
+            height: 100%;
+            background-color: var(--accent);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .metric-value {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            text-align: right;
         }
 
         .moderators-section {
@@ -1011,41 +1053,41 @@
 
         /* Responsive */
         @media (max-width: 768px) {
-            .container { 
-                padding: 1rem; 
+            .container {
+                padding: 1rem;
             }
-            
+
             .post-container {
                 flex-direction: column;
             }
-            
+
             .vote-buttons {
                 flex-direction: row;
                 justify-content: center;
                 padding: 0.5rem;
             }
-            
-            .stats-grid { 
-                grid-template-columns: 1fr; 
+
+            .stats-grid {
+                grid-template-columns: 1fr;
             }
-            
-            .communities-grid { 
-                grid-template-columns: 1fr; 
+
+            .communities-grid {
+                grid-template-columns: 1fr;
             }
-            
-            .post-meta { 
-                flex-direction: column; 
-                align-items: flex-start; 
+
+            .post-meta {
+                flex-direction: column;
+                align-items: flex-start;
             }
-            
+
             .section-title {
                 font-size: 1.25rem;
             }
-            
+
             .card {
                 padding: 1rem;
             }
-            
+
             .post-title {
                 font-size: 1.5rem;
             }
@@ -1307,28 +1349,624 @@
 
         /* Estilo para el enlace "Ver más comentarios" */
         .more-comments-link {
-            background-color: transparent; /* Fondo transparente */
-            color: #fffdfd; /* Texto negro */
-            text-decoration: none; /* Sin subrayado por defecto */
+            color: var(--text-primary); /* Color por defecto */
+            text-decoration: none;
             font-size: 14px;
-            font-weight: normal; /* Peso normal para que no se vea como un botón */
-            transition: color 0.3s; /* Transición suave para el color */
+            font-weight: normal;
+            transition: color 0.3s;
         }
 
         /* Efecto al pasar el mouse */
         .more-comments-link:hover {
-            color: #555555; /* Un gris oscuro para indicar que es clickable */
-            text-decoration: underline; /* Subrayado sutil al pasar el mouse */
+            color: var(--accent);
+            text-decoration: underline;
         }
 
         /* Efecto al hacer clic */
         .more-comments-link:active {
-            color: #333333; /* Un gris más oscuro al hacer clic */
+            color: var(--accent-hover);
         }
+
+
+        /* === FIX: Comparación de Comunidades - Estilos de Enlace === */
+        .post-item .post-title {
+            color: var(--accent); /* Color naranja por defecto */
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease, text-decoration 0.3s ease;
+            display: block; /* Asegura que ocupe su propio espacio */
+            margin-bottom: 0.5rem; /* Añade espacio debajo */
+        }
+
+        .post-item .post-title:hover {
+            color: var(--accent-hover); /* Color naranja más brillante al pasar el mouse */
+            text-decoration: underline;
+        }
+        /* === FIN FIX === */
+
+        .post-item .post-metrics {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem; /* Espacio antes de los comentarios */
+        }
+
+        .post-item .comments-section {
+            margin-top: 0.75rem;
+            padding-left: 1rem;
+            border-left: 2px solid var(--border-color);
+        }
+
+        .post-item .comment-item {
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .post-item .comment-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.25rem;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+        .post-item .comment-author {
+             font-weight: 500;
+             color: var(--text-primary); /* Color primario para el autor */
+        }
+
+        .post-item .comment-body {
+            line-height: 1.4;
+             color: var(--text-primary); /* Color primario para el cuerpo */
+        }
+
+
+        /* Estilos para el análisis de palabras */
+        .word-cloud-container {
+            padding: 1rem 0;
+        }
+
+        .word-cloud-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            background-color: var(--bg-highlight);
+            padding: 1rem;
+            border-radius: var(--radius-md);
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .control-group label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .select-control {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            min-width: 150px;
+        }
+
+        .word-cloud-visualization {
+            background-color: var(--bg-highlight);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .word-cloud-canvas {
+            width: 100%;
+            height: 100%;
+            min-height: 250px;
+        }
+
+        .word-stats {
+            margin-bottom: 1.5rem;
+        }
+
+        .word-stats-header {
+            margin-bottom: 1rem;
+        }
+
+        .word-stats-header h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .word-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .word-stat-card {
+            background-color: var(--bg-highlight);
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            text-align: center;
+        }
+
+        .word-stat-title {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .word-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .top-words-container {
+            margin-top: 1.5rem;
+        }
+
+        .top-words-container h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .top-words-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 0.75rem;
+        }
+         .word-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem;
+            background-color: var(--bg-highlight);
+            border-radius: var(--radius-sm);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .word-text {
+            font-weight: 500;
+            z-index: 1;
+        }
+
+        .word-count {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            z-index: 1;
+        }
+
+        .word-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            background-color: var(--accent-light);
+            z-index: 0;
+            /* width set dynamically */
+        }
+
+
+        /* Estilos para el análisis de usuarios */
+        .user-analysis-container {
+            padding: 1rem 0;
+        }
+
+        .user-metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .user-metric-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+            padding: 1.25rem;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all var(--transition-medium);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .user-metric-card:hover {
+            transform: translateY(-4px);
+            background: linear-gradient(145deg, rgba(255, 69, 0, 0.1), rgba(255, 69, 0, 0.05));
+            border-color: var(--accent);
+        }
+
+        .user-metric-icon {
+            background-color: rgba(255, 69, 0, 0.1);
+            padding: 0.75rem;
+            border-radius: var(--radius-sm);
+            color: var(--accent);
+            transition: all var(--transition-medium);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-metric-card:hover .user-metric-icon {
+            transform: scale(1.1) rotate(5deg);
+            background-color: var(--accent);
+            color: white;
+        }
+
+        .user-metric-info {
+            flex: 1;
+        }
+
+        .user-metric-label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .user-metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            transition: all var(--transition-fast);
+        }
+
+        .user-metric-card:hover .user-metric-value {
+            color: var(--accent);
+        }
+
+        .user-activity-chart,
+        .sentiment-chart-container {
+            background-color: var(--bg-highlight);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .user-activity-chart h3,
+        .top-users-container h3,
+        .user-sentiment-analysis h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px; /* Ajusta la altura según sea necesario */
+            width: 100%; /* Asegura que ocupe todo el ancho disponible */
+        }
+
+        .top-users-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .user-item {
+            background-color: var(--bg-highlight);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            transition: all var(--transition-fast);
+        }
+
+        .user-item:hover {
+             background-color: var(--bg-card-hover); /* Lighter highlight on hover */
+             transform: translateY(-2px);
+        }
+
+
+        .user-item-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        /* Avatar dentro de user-item ya está definido arriba, no necesita duplicarse */
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+             color: var(--text-primary);
+        }
+
+        /* user-karma dentro de user-item ya está definido arriba */
+
+        .user-stats {
+            display: flex;
+            gap: 1rem;
+             border-top: 1px solid var(--border-color); /* Separador visual */
+             padding-top: 0.75rem;
+             margin-top: 0.75rem;
+        }
+
+        .user-stat {
+            flex: 1;
+            text-align: center;
+        }
+
+        .user-stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+             text-transform: uppercase;
+        }
+
+        .user-stat-value {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--accent);
+        }
+
+
+        .sentiment-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .sentiment-card {
+            background-color: var(--bg-card);
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+             border-left: 4px solid transparent; /* Borde izquierdo para color */
+             transition: border-color var(--transition-fast);
+        }
+
+        .sentiment-card.positive { border-left-color: var(--success); }
+        .sentiment-card.neutral { border-left-color: var(--warning); }
+        .sentiment-card.negative { border-left-color: var(--error); }
+
+        .sentiment-card.positive .sentiment-icon {
+            background-color: rgba(70, 189, 98, 0.1);
+            color: var(--success);
+        }
+
+        .sentiment-card.neutral .sentiment-icon {
+            background-color: rgba(255, 200, 87, 0.1);
+            color: var(--warning);
+        }
+
+        .sentiment-card.negative .sentiment-icon {
+            background-color: rgba(255, 77, 106, 0.1);
+            color: var(--error);
+        }
+
+        .sentiment-icon {
+            padding: 0.75rem;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+             flex-shrink: 0; /* Evita que el icono se encoja */
+        }
+
+        .sentiment-info {
+            flex: 1;
+        }
+
+        .sentiment-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+            text-transform: uppercase;
+        }
+
+        .sentiment-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .sentiment-card.positive .sentiment-value { color: var(--success); }
+        .sentiment-card.neutral .sentiment-value { color: var(--warning); }
+        .sentiment-card.negative .sentiment-value { color: var(--error); }
+
+        /* Estilos para eventos recientes */
+        .events-timeline {
+            padding: 1rem 0;
+        }
+
+        .timeline-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            background-color: var(--bg-highlight);
+            padding: 1rem;
+            border-radius: var(--radius-md);
+        }
+
+        .timeline-container {
+            position: relative;
+            padding-left: 3rem; /* Más espacio para el icono */
+            margin-top: 1.5rem; /* Separación de los controles */
+        }
+
+        .timeline-container::before {
+            content: "";
+            position: absolute;
+            left: 1.25rem; /* Alineado con el centro del icono */
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: var(--border-color);
+            z-index: 0;
+        }
+
+        .timeline-event {
+            position: relative;
+            margin-bottom: 1.5rem; /* Espacio entre eventos */
+            padding: 1rem;
+            background-color: var(--bg-card);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            transition: all var(--transition-fast);
+        }
+         .timeline-event:hover {
+             border-color: var(--accent);
+             transform: translateX(5px);
+         }
+
+        .timeline-event-icon {
+            position: absolute;
+            left: -2rem; /* Posiciona el icono fuera del contenido, sobre la línea */
+            top: 1rem; /* Alinea verticalmente con el contenido */
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            background-color: var(--accent-light);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+             border: 2px solid var(--bg-dark); /* Borde para separarlo de la línea */
+        }
+        /* Colores específicos para tipos de evento (opcional) */
+         .timeline-event.post .timeline-event-icon { background-color: rgba(0, 121, 211, 0.1); color: #0079D3; } /* Azul para posts */
+         .timeline-event.comment .timeline-event-icon { background-color: rgba(70, 189, 98, 0.1); color: var(--success); } /* Verde para comentarios */
+         .timeline-event.award .timeline-event-icon { background-color: rgba(255, 176, 0, 0.1); color: var(--karma); } /* Amarillo para premios */
+
+        .timeline-event-content {
+            /* No necesita padding-left ahora que el icono está fuera */
+        }
+
+        .timeline-event-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            flex-wrap: wrap; /* Para responsive */
+            gap: 0.5rem;
+        }
+
+        .timeline-event-title {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-primary);
+            flex-grow: 1; /* Ocupa espacio disponible */
+        }
+
+        .timeline-event-time {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            white-space: nowrap; /* Evita que la hora se rompa */
+        }
+
+        .timeline-event-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem; /* Espacio después del título/hora */
+             flex-wrap: wrap;
+        }
+
+        .timeline-event-user {
+            font-weight: 500;
+            color: var(--accent); /* Resalta el nombre de usuario */
+        }
+
+        .timeline-event-score {
+            background-color: var(--bg-highlight);
+            padding: 0.2rem 0.5rem;
+            border-radius: 99px;
+            font-size: 0.75rem;
+        }
+
+
+        /* Estado vacío */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 1rem;
+            color: var(--text-secondary);
+            text-align: center;
+            background-color: var(--bg-highlight); /* Fondo suave */
+            border-radius: var(--radius-md);
+            border: 1px dashed var(--border-color); /* Borde punteado */
+        }
+
+        .empty-state svg {
+            margin-bottom: 1rem;
+            opacity: 0.3; /* Icono más sutil */
+            width: 48px; /* Tamaño moderado */
+            height: 48px;
+        }
+
+        .empty-state p {
+            font-size: 1rem;
+        }
+
+        /* Estilos para la sección de comunidades relacionadas (rediseñada) */
+        .related-communities-container {
+            padding: 0.5rem 0;
+        }
+
+        /* Asegúrate de que las clases CSS coincidan con las usadas en el HTML */
+        .metric-bar-container {
+            /* ... otros estilos ... */
+            position: relative; /* Necesario para el tooltip si se añade */
+        }
+
+        .metric-bar {
+            /* ... otros estilos ... */
+            display: block; /* Asegura que sea un bloque */
+        }
+         /* Clases CSS adicionales para el post-item dentro de Comparación Comunidades */
+         .posts-section {
+             margin-top: 1.5rem;
+             padding-top: 1rem;
+             border-top: 1px solid var(--border-color);
+         }
+
+         .posts-section h4 {
+             font-size: 1rem;
+             font-weight: 600;
+             color: var(--text-secondary);
+             margin-bottom: 1rem;
+         }
+
+         .post-item {
+             background-color: var(--bg-highlight);
+             padding: 1rem;
+             border-radius: var(--radius-sm);
+             margin-bottom: 1rem;
+             border-left: 3px solid var(--accent-medium); /* Indicador visual */
+         }
+
     </style>
 </head>
-<body>
-    <div class="progress-bar" id="progressBar"></div>
+<body data-report-data='{{ data | tojson | safe }}'> <div class="progress-bar" id="progressBar"></div>
     <div class="decoration decoration-1"></div>
     <div class="decoration decoration-2"></div>
 
@@ -1499,8 +2137,7 @@
                 </div>
             </div>
         </div>
-
-        <!-- Estadísticas -->
+    
         <div class="card" id="statsCard">
             <div class="section-title">
                 <div class="section-title-icon">
@@ -1550,10 +2187,10 @@
                     <div class="stat-info">
                         <div class="stat-label">Ratio de Engagement</div>
                         <div class="stat-value">
-                            {% set engagement = 0 %} {% if data.event and data.event.score is defined and data.comments is defined %} {% set engagement = (data.event.score + data.comments|length) / 100 %} {{ "%.2f"|format(engagement) }}% {% else %} 0.00% {% endif %}
+                            <span id="engagementRatio">0.00%</span> {# Se calculará con JS #}
                         </div>
                     </div>
-                    <div class="tooltip">Ratio de interacción con el contenido</div>
+                    <div class="tooltip">Ratio de interacción (Upvotes + Comentarios) / Vistas (si disponible)</div>
                 </div>
 
                 <div class="stat-card" data-tooltip="Tiempo de actividad">
@@ -1565,212 +2202,359 @@
                     </div>
                     <div class="stat-info">
                         <div class="stat-label">Tiempo Activo</div>
-                        <div class="stat-value">
-                            {% if data.event and data.event.created_at %} {% set date_str = data.event.created_at %} {% if date_str|length > 10 and '-' in date_str %} {% set date_parts = date_str.split(' ')[0].split('-') %} {% if date_parts|length >= 3 %} {{ date_parts[2] }}/{{
-                            date_parts[1] }}/{{ date_parts[0] }} {% else %} {{ date_str }} {% endif %} {% else %} {{ date_str }} {% endif %} {% else %} 2h {% endif %}
-                        </div>
+                         <div class="stat-value post-active-time">
+                             {# Se actualizará con JS #}
+                             {% if data.event and data.event.created_at %}
+                                 {{ data.event.created_at }} {# Muestra la fecha inicial #}
+                             {% else %}
+                                 N/A
+                             {% endif %}
+                         </div>
                     </div>
                     <div class="tooltip">Tiempo desde la publicación</div>
                 </div>
             </div>
 
             {% if data.comments and data.comments|length > 0 %}
-            <div class="card" id="commentsCard">
-                <div class="section-title" style="font-size: 1.25rem; margin-top: 2rem;">
-                    <div class="section-title-icon" style="width: 32px; height: 32px;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                        </svg>
-                    </div>
-                    <span>Comentarios Destacados ({{ data.comments|length }} de {{ data.engagement.total_comments if data.engagement and data.engagement.total_comments is defined else 0 }})</span>
+            <div class="section-title" style="font-size: 1.25rem; margin-top: 2rem;">
+                <div class="section-title-icon" style="width: 32px; height: 32px;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg>
                 </div>
-                <div class="comments-list">
-                    {% for comment in data.comments %}
-                    <div class="comment">
-                        <div class="comment-header">
-                            <div class="user-avatar">
-                                {{ comment.user.name|slice(2, 2)|upper if comment.user.name else 'U' }}
-                            </div>
-                            <div class="comment-user-info">
-                                <div class="comment-username">
-                                    {{ comment.user.name }}
-                                    <span class="user-karma">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"/>
-                                <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
-                                <line x1="9" y1="9" x2="9.01" y2="9"/>
-                                <line x1="15" y1="9" x2="15.01" y2="9"/>
-                            </svg>
-                            {{ 1000 + loop.index * 500 }} karma
-                        </span>
-                                </div>
-                                <div class="comment-time">hace {{ loop.index * 2 }} horas</div>
-                            </div>
-                        </div>
-                        <div class="comment-body">
-                            {{ comment.body|default('N/A') }}
-                        </div>
-                    </div>
-                    {% endfor %}
-                    <!-- Si hay más comentarios disponibles, mostrar un enlace -->
-                    {% if data.engagement.total_comments > data.comments|length %}
-                    <div class="more-comments">
-                        <a href="{{ data.event.url if data.event and data.event.url else '#' }}" target="_blank" class="more-comments-link">
-                Ver más comentarios ({{ data.engagement.total_comments - data.comments|length }} más)
-                        </a>
-                    </div>
-                    {% endif %}
-                </div>
+                <span>Comentarios Destacados (<span id="displayedCommentsCount">{{ data.comments|length }}</span> de <span id="totalCommentsCount">{{ data.engagement.total_comments if data.engagement and data.engagement.total_comments is defined else 0 }}</span>)</span>
             </div>
+            <div class="comments-list">
+                {% for comment in data.comments %}
+                <div class="comment" data-comment-id="{{ comment.id if comment.id else loop.index }}">
+                    <div class="comment-header">
+                        <div class="user-avatar">
+                            {{ comment.user.name[0]|upper if comment.user and comment.user.name else '?' }}
+                        </div>
+                        <div class="comment-user-info">
+                            <div class="comment-username">
+                                {{ comment.user.name if comment.user else 'Anónimo' }}
+                                <span class="user-karma">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                    </svg>
+                                    {{ comment.user.karma if comment.user and comment.user.karma is defined else 'N/A' }} karma
+                                </span>
+                            </div>
+                            <div class="comment-time" data-timestamp="{{ comment.created_utc if comment.created_utc else '' }}">
+                                {{ comment.created_at if comment.created_at else 'N/A' }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="comment-body">
+                        {{ comment.body|default('N/A') }}
+                    </div>
+                </div>
+                {% endfor %}
+                {% set total_comments = data.engagement.total_comments if data.engagement and data.engagement.total_comments is defined else 0 %}
+                {% set displayed_comments = data.comments|length %}
+                {% if total_comments > displayed_comments %}
+                <div class="more-comments">
+                    <a href="{{ data.event.url if data.event and data.event.url else '#' }}" target="_blank" class="more-comments-link">
+                        Ver más comentarios ({{ total_comments - displayed_comments }} más)
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+             <div class="empty-state">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                  </svg>
+                 <p>Aún no hay comentarios para mostrar.</p>
+             </div>
             {% endif %}
         </div>
 
-        <!-- Comunidades -->
-        <div class="card" id="communitiesCard">
+        <div class="card" id="communityComparisonCard">
             <div class="section-title">
                 <div class="section-title-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                        <circle cx="9" cy="7" r="4" />
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                    </svg>
+                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                         <path d="M3 6l3 6h12l3-6H3z"></path>
+                         <path d="M3 18v-6a6 6 0 0 1 6-6h6a6 6 0 0 1 6 6v6"></path>
+                         <path d="M12 18v-6"></path>
+                     </svg>
+                </div>
+                <span>Comparación de Comunidades</span>
+            </div>
+
+             {% if data.community_comparison and data.community_comparison.communities %}
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-label">Comunidad Más Activa (Comentarios)</div>
+                            <div class="stat-value">{{ data.community_comparison.summary.most_active_community if data.community_comparison.summary and data.community_comparison.summary.most_active_community else 'N/A' }}</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-label">Mayor Puntuación Promedio (Posts)</div>
+                            <div class="stat-value">{{ data.community_comparison.summary.highest_scored_community if data.community_comparison.summary and data.community_comparison.summary.highest_scored_community else 'N/A' }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="communities-grid">
+                     {# --- DATOS REALES --- #}
+                    {% for community in data.community_comparison.communities %}
+                    <div class="community-card">
+                        <div class="community-header">
+                            <div class="community-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" /><path d="M16 12a4 4 0 0 1-8 0" /><line x1="9" y1="9" x2="9.01" y2="9" /><line x1="15" y1="9" x2="15.01" y2="9" /></svg>
+                            </div>
+                            <div>
+                                <h3 class="community-name">r/{{ community.community_name }}</h3>
+                                <div class="community-stats">
+                                    <span class="stat-item">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg>
+                                        {{ community.community_size | default('N/A') }} miembros
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {# Métricas como barras de progreso #}
+                         <div class="community-metrics">
+                            <div class="metric-item">
+                                <div class="metric-label">Puntuación Promedio (Posts)</div>
+                                <div class="metric-bar-container">
+                                     {# Asumiendo un máximo razonable, p.ej. 1000, o calcular dinámicamente #}
+                                     {% set max_score = data.community_comparison.summary.max_avg_score | default(1000) %}
+                                     {% set avg_score = community.avg_post_score | default(0) %}
+                                     {% set score_percent = (avg_score / max_score * 100) | round | int if max_score > 0 else 0 %}
+                                    <div class="metric-bar" style="width: {{ score_percent }}%"></div>
+                                </div>
+                                <div class="metric-value">{{ "%.1f"|format(avg_score) }}</div>
+                            </div>
+                             <div class="metric-item">
+                                <div class="metric-label">Comentarios Promedio (Posts)</div>
+                                <div class="metric-bar-container">
+                                     {% set max_comments = data.community_comparison.summary.max_avg_comments | default(100) %}
+                                     {% set avg_comments = community.avg_comments_per_post | default(0) %}
+                                     {% set comments_percent = (avg_comments / max_comments * 100) | round | int if max_comments > 0 else 0 %}
+                                    <div class="metric-bar" style="width: {{ comments_percent }}%"></div>
+                                </div>
+                                <div class="metric-value">{{ "%.1f"|format(avg_comments) }}</div>
+                            </div>
+                        </div>
+
+
+                        <div class="posts-section">
+                            <h4 style="margin: 0 0 1rem 0; color: var(--text-secondary);">Publicaciones Recientes (Top 3)</h4>
+                             {% if community.posts and community.posts|length > 0 %}
+                                {% for post in community.posts[:3] %} {# Mostrar solo los top 3 #}
+                                <div class="post-item">
+                                     {# --- FIX: Aplicado estilo CSS para el color naranja --- #}
+                                    <a href="{{ post.post_url }}" class="post-title" target="_blank">
+                                        {{ post.post_title }}
+                                    </a>
+                                    <div class="post-metrics">
+                                        <span class="stat-item">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                                            {{ post.score | default('0') }}
+                                        </span>
+                                        <span class="stat-item">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                                            {{ post.total_comments | default('0') }}
+                                        </span>
+                                    </div>
+
+                                    {% if post.comments and post.comments|length > 0 %}
+                                        <div class="comments-section">
+                                            {% for comment in post.comments[:2] %} {# Mostrar 1 o 2 comentarios destacados #}
+                                            <div class="comment-item">
+                                                <div class="comment-header">
+                                                    <span class="comment-author">{{ comment.user.name if comment.user else 'Anónimo' }}</span>
+                                                    <span style="color: var(--text-secondary); font-size: 0.75rem;">• {{ comment.score | default('0') }} pts</span>
+                                                </div>
+                                                <div class="comment-body">{{ comment.body | truncate(80, True) }}</div> {# Acortar comentarios largos #}
+                                            </div>
+                                            {% endfor %}
+                                             {# Enlace para ver más comentarios si hay más de los mostrados #}
+                                             {% if post.total_comments > post.comments[:2]|length %}
+                                                <a href="{{ post.post_url }}" class="more-comments-link" style="font-size: 0.8rem; display: block; margin-top: 0.5rem;" target="_blank">
+                                                    Ver más comentarios...
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                     {% endif %}
+                                </div>
+                                {% endfor %}
+                             {% else %}
+                                 <p style="color: var(--text-secondary); font-style: italic;">No hay publicaciones recientes para mostrar.</p>
+                             {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+             {% else %}
+                 <div class="empty-state">
+                      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M3 6l3 6h12l3-6H3z"></path><path d="M3 18v-6a6 6 0 0 1 6-6h6a6 6 0 0 1 6 6v6"></path><path d="M12 18v-6"></path></svg>
+                     <p>No hay datos de comparación de comunidades disponibles.</p>
+                 </div>
+             {% endif %}
+        </div>
+
+        <div class="card" id="relatedCommunitiesCard">
+            <div class="section-title">
+                <div class="section-title-icon">
+                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                     </svg>
                 </div>
                 <span>Comunidades Relacionadas</span>
             </div>
 
-            <div class="communities-grid">
-                {% if data.communities and data.communities|length > 0 %} {% for community in data.communities %}
-                <div class="community-card">
-                    <div class="community-header">
-                        <div class="community-icon">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10" />
-                                <path d="M16 12a4 4 0 0 1-8 0" />
-                                <line x1="9" y1="9" x2="9.01" y2="9" />
-                                <line x1="15" y1="9" x2="15.01" y2="9" />
-                            </svg>
-                        </div>
-                        <h3 class="community-name">r/{{ community.name }}</h3>
-                    </div>
-
-                    <div class="community-stats">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                            <circle cx="9" cy="7" r="4" />
-                            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                        </svg>
-                        {{ community.size if community.size is defined else 'N/A' }} suscriptores
-                    </div>
-
-                    <p class="community-description">
-                        {{ community.description if community.description else 'No description available' }}
-                    </p>
-
-                    <div class="moderators-section">
-                        <p class="moderators-title">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                            </svg>
-                            Moderadores Activos:
-                        </p>
-                        <div class="moderators-list">
-                            {% for user in community.active_users %}
-                            <div class="moderator-tag">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                                    <circle cx="12" cy="7" r="4" />
-                                </svg>
-                                <span>{{ user.name }}</span>
-                                <span class="karma-badge">
-                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                                                </svg>
-                                                {{ user.post_karma }}/{{ user.comment_karma }}
-                                            </span>
+            <div class="related-communities-container">
+                {% if data.communities and data.communities|length > 0 %}
+                <div class="communities-grid">
+                     {# --- FIX: Usar datos reales para barras de progreso --- #}
+                    {% for community in data.communities %}
+                    <div class="community-card">
+                        <div class="community-header">
+                            <div class="community-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" /><path d="M16 12a4 4 0 0 1-8 0" /><line x1="9" y1="9" x2="9.01" y2="9" /><line x1="15" y1="9" x2="15.01" y2="9" /></svg>
                             </div>
-                            {% endfor %}
+                            <div class="community-info">
+                                <h3 class="community-name">r/{{ community.name }}</h3>
+                                <div class="community-stats">
+                                    <span class="stat-item">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg>
+                                        {{ community.size if community.size is defined else 'N/A' }} suscriptores
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="community-description">
+                            {{ community.description if community.description else 'No description available' }}
+                        </div>
+
+                        <div class="community-metrics">
+                             {# --- FIX: Usar datos reales para barras de progreso --- #}
+                            <div class="metric-item">
+                                <div class="metric-label">Actividad</div>
+                                <div class="metric-bar-container">
+                                    <div class="metric-bar" style="width: {{ community.activity_score | default(0) }}%"></div> {# Usa el valor real o 0 si no existe #}
+                                </div>
+                                <div class="metric-value">{{ community.activity_score | default(0) }}%</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-label">Relevancia</div>
+                                <div class="metric-bar-container">
+                                    <div class="metric-bar" style="width: {{ community.relevance_score | default(0) }}%"></div> {# Usa el valor real o 0 si no existe #}
+                                </div>
+                                <div class="metric-value">{{ community.relevance_score | default(0) }}%</div>
+                            </div>
+                        </div>
+
+                        <div class="moderators-section">
+                            <p class="moderators-title">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+                                Usuarios Activos (Karma): {# Cambiado título para claridad #}
+                            </p>
+                             {% if community.active_users and community.active_users|length > 0 %}
+                                <div class="moderators-list">
+                                    {% for user in community.active_users %}
+                                    <div class="moderator-tag" title="Post Karma: {{ user.post_karma }} / Comment Karma: {{ user.comment_karma }}">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+                                        <span>{{ user.name }}</span>
+                                        <span class="karma-badge">
+                                             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                                            {{ (user.post_karma | default(0)) + (user.comment_karma | default(0)) }} {# Suma total de karma #}
+                                        </span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                             {% else %}
+                                <p style="color: var(--text-secondary); font-style: italic; font-size: 0.9rem;">No hay datos de usuarios activos.</p>
+                             {% endif %}
                         </div>
                     </div>
+                    {% endfor %}
                 </div>
-                {% endfor %} {% else %}
-                <div class="text-center text-gray-400 col-span-full">
-                    No se encontraron comunidades.
+                {% else %}
+                <div class="empty-state">
+                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                     </svg>
+                    <p>No se encontraron comunidades relacionadas.</p>
                 </div>
                 {% endif %}
             </div>
         </div>
+    </div>
 
-        <!-- Decoración de Snoo (mascota de Reddit) -->
-        <div class="snoo-decoration float-animation">
-            <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
-                <path d="M10 0C4.5 0 0 4.5 0 10s4.5 10 10 10 10-4.5 10-10S15.5 0 10 0zm5.8 11.1c.1.2.1.3.1.5 0 1.2-1.4 2.2-3.2 2.2-.9 0-1.7-.3-2.2-.7-.6.4-1.3.7-2.2.7-1.8 0-3.2-1-3.2-2.2 0-.2 0-.3.1-.5-1-.5-1.6-1.2-1.6-2 0-1.4 1.6-2.4 3.7-2.4.6 0 1.2.1 1.7.3.5-.2 1.1-.3 1.7-.3 2 0 3.7 1.1 3.7 2.4-.2.8-.8 1.5-1.6 2z"
-                />
-                <circle cx="7.5" cy="9.5" r="1" />
-                <circle cx="12.5" cy="9.5" r="1" />
-                <path d="M12.7 12.3c-.4.4-1.1.6-2.2.6s-1.8-.2-2.2-.6c-.1-.1-.3-.1-.4 0s-.1.3 0 .4c.5.5 1.3.8 2.6.8s2.1-.3 2.6-.8c.1-.1.1-.3 0-.4-.1-.1-.3-.1-.4 0z" />
-            </svg>
+    <button class="scroll-top" id="scrollTop" aria-label="Volver arriba">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 19V5m-7 7 7-7 7 7" />
+        </svg>
+    </button>
+
+    <div class="overlay" id="shareOverlay"></div>
+    <div class="share-popup" id="sharePopup">
+        <div class="share-popup-header">
+            <h3 class="share-popup-title">Compartir Análisis</h3>
+            <button class="share-popup-close" id="closeSharePopup" aria-label="Cerrar">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+            </button>
         </div>
-
-        <!-- Botón de scroll arriba -->
-        <button class="scroll-top" id="scrollTop" aria-label="Scroll to top">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 19V5M5 12l7-7 7 7" />
-            </svg>
-        </button>
-
-        <!-- Popup de compartir -->
-        <div class="overlay" id="shareOverlay"></div>
-        <div class="share-popup" id="sharePopup">
-            <div class="share-popup-header">
-                <h3 class="share-popup-title">Compartir Post</h3>
-                <button class="share-popup-close" id="closeSharePopup">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                </button>
+        <div class="share-popup-content">
+            <div class="share-popup-input-container">
+                <input type="text" class="share-popup-input" id="shareLink" value="{{ data.event.url if data.event and data.event.url else '#' }}" readonly>
+                <button class="share-popup-copy" id="copyLink">Copiar</button>
             </div>
-            <div class="share-popup-content">
-                <div class="share-popup-input-container">
-                    <input type="text" class="share-popup-input" id="shareLink" readonly value="{{ data.event.url if data.event and data.event.url else 'https://reddit.com/r/programming/comments/example' }}">
-                    <button class="share-popup-copy" id="copyShareLink">Copiar</button>
+            <div class="share-popup-message" id="copyMessage">¡Enlace copiado al portapapeles!</div>
+            <div class="share-popup-options">
+                <div class="share-option" data-share="twitter">
+                    <div class="share-option-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z" /></svg>
+                    </div>
+                    <span class="share-option-label">Twitter</span>
                 </div>
-                <div class="share-popup-message" id="copyMessage">¡Enlace copiado al portapapeles!</div>
-                <div class="share-popup-options">
-                    <div class="share-option" data-platform="twitter">
-                        <div class="share-option-icon">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path>
-                            </svg>
-                        </div>
-                        <span class="share-option-label">Twitter</span>
+                <div class="share-option" data-share="facebook">
+                    <div class="share-option-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" /></svg>
                     </div>
-                    <div class="share-option" data-platform="facebook">
-                        <div class="share-option-icon">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
-                            </svg>
-                        </div>
-                        <span class="share-option-label">Facebook</span>
+                    <span class="share-option-label">Facebook</span>
+                </div>
+                <div class="share-option" data-share="reddit">
+                    <div class="share-option-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" /><path d="M16 12a4 4 0 0 1-8 0" /><line x1="9" y1="9" x2="9.01" y2="9" /><line x1="15" y1="9" x2="15.01" y2="9" /></svg>
                     </div>
-                    <div class="share-option" data-platform="email">
-                        <div class="share-option-icon">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                                <polyline points="22,6 12,13 2,6"></polyline>
-                            </svg>
-                        </div>
-                        <span class="share-option-label">Email</span>
-                    </div>
+                    <span class="share-option-label">Reddit</span>
                 </div>
             </div>
         </div>
+    </div>
 
-        <script>
-            // Variables globales
-            let slideIndex = 0;
+    <div class="snoo-decoration">
+        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M16 12a4 4 0 0 1-8 0" />
+            <line x1="9" y1="9" x2="9.01" y2="9" />
+            <line x1="15" y1="9" x2="15.01" y2="9" />
+        </svg>
+    </div>
+
+    <script>
+          // Variables globales
+          let slideIndex = 0;
             const slides = document.getElementsByClassName("media-slide");
             const progressBar = document.querySelector('#progressBar');
             let isLoading = false;
@@ -2057,6 +2841,6 @@
             document.documentElement.style.setProperty('--transition-fast', '0s');
             document.documentElement.style.setProperty('--transition-medium', '0s');
         }
-        </script>
+    </script>
 </body>
 </html>
